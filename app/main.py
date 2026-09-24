@@ -4,7 +4,10 @@ from app.routes import auth, history, marketplace, network, pages, payments
 
 app = FastAPI(title="TriBoost", version="1.0.0")
 
+# Pages HTML
 app.include_router(pages.router, tags=["Pages"])
+
+# API
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(marketplace.router, prefix="/api/marketplace", tags=["Marketplace"])
 app.include_router(network.router, prefix="/api/network", tags=["Network"])
