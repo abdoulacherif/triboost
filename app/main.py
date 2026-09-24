@@ -28,3 +28,10 @@ async def debug_routes():
                 "endpoint": r.endpoint.__name__ if hasattr(r, "endpoint") else "?",
             })
     return {"total": len(routes), "routes": routes}
+
+# Route test unique — sera supprimée après
+@app.get("/test-boutique-v3")
+async def test_boutique_v3():
+    from fastapi.responses import HTMLResponse
+    from app.templates.boutique import HTML_BOUTIQUE
+    return HTMLResponse(content=HTML_BOUTIQUE, status_code=200)
