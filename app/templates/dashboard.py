@@ -1,5 +1,6 @@
 from app.templates.shared import CSS_COMMUN, HTML_HEAD
 
+
 HTML_DASHBOARD = (
     HTML_HEAD.format(title="Accueil — TriBoost")
     + CSS_COMMUN
@@ -92,6 +93,7 @@ HTML_DASHBOARD = (
     color: #fff;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
   }
   .drawer-header::before {
     content: '';
@@ -133,21 +135,23 @@ HTML_DASHBOARD = (
   .drawer-avatar {
     width: 56px; height: 56px; border-radius: 50%;
     background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(4px);
     color: #fff; font-weight: 800; font-size: 22px;
     display: flex; align-items: center; justify-content: center;
     border: 2px solid rgba(255,255,255,0.3);
+    flex-shrink: 0;
+  }
+  .drawer-user-info {
+    flex: 1;
+    min-width: 0;
   }
   .drawer-user-info h4 {
     font-size: 15px; font-weight: 700;
     margin-bottom: 2px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 180px;
   }
   .drawer-user-info p {
     font-size: 12px; opacity: 0.85;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 180px;
   }
   .drawer-user-info .drawer-code {
     display: inline-block;
@@ -189,15 +193,10 @@ HTML_DASHBOARD = (
     font-size: 15px;
     font-weight: 600;
     transition: background 0.2s, transform 0.15s;
-    position: relative;
-    overflow: hidden;
   }
   .drawer-item:active {
     background: #f5f5f5;
     transform: scale(0.98);
-  }
-  .drawer-item:hover {
-    background: var(--green-light);
   }
   .drawer-item-icon {
     width: 40px; height: 40px;
@@ -228,16 +227,17 @@ HTML_DASHBOARD = (
   /* Icônes couleurs */
   .di-green  { background: var(--green-light);  color: var(--green);  }
   .di-orange { background: var(--orange-light); color: var(--orange); }
-  .di-gold   { background: var(--gold-light);   color: #f9a825;        }
+  .di-gold   { background: var(--gold-light);   color: #f9a825;       }
   .di-red    { background: var(--red-light);    color: var(--red);    }
-  .di-blue   { background: #e3f2fd;             color: #1976d2;        }
-  .di-purple { background: #f3e5f5;             color: #7b1fa2;        }
-  .di-teal   { background: #e0f2f1;             color: #00796b;        }
+  .di-blue   { background: #e3f2fd;             color: #1976d2;       }
+  .di-purple { background: #f3e5f5;             color: #7b1fa2;       }
+  .di-teal   { background: #e0f2f1;             color: #00796b;       }
 
   /* Déconnexion */
   .drawer-footer {
     padding: 12px 12px 20px;
     border-top: 1px solid var(--border);
+    flex-shrink: 0;
   }
   .drawer-logout {
     display: flex;
@@ -264,6 +264,85 @@ HTML_DASHBOARD = (
     border-radius: 12px;
     background: rgba(211, 47, 47, 0.15);
     display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ===== BANNIÈRE INACTIF ===== */
+  .inactive-banner {
+    display: none;
+    margin: 0 20px 16px;
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    border: 1.5px solid #ffb74d;
+    border-radius: 16px;
+    padding: 14px 16px;
+    align-items: center;
+    gap: 12px;
+    animation: slideDown 0.3s ease-out;
+  }
+  .inactive-banner.show { display: flex; }
+  .inactive-banner .icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: #ffe0b2;
+    color: #e65100;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .inactive-banner .text { flex: 1; min-width: 0; }
+  .inactive-banner .title {
+    font-size: 13px; font-weight: 800; color: #e65100;
+    margin-bottom: 2px;
+  }
+  .inactive-banner .desc {
+    font-size: 11px; color: #bf360c;
+  }
+  .inactive-banner .action {
+    background: #e65100;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 4px;
+  }
+  .badge-status.active {
+    background: var(--green-light);
+    color: var(--green);
+  }
+  .badge-status.inactive {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  /* ===== SKELETON LOADING ===== */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 8px;
+    color: transparent !important;
+    display: inline-block;
+    min-width: 60px;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 
   /* ===== PROFIL CARD ===== */
@@ -278,6 +357,7 @@ HTML_DASHBOARD = (
     background: var(--green); color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-weight: bold; font-size: 20px; position: relative;
+    flex-shrink: 0;
   }
   .online-dot {
     width: 12px; height: 12px; background: var(--gold);
@@ -287,11 +367,6 @@ HTML_DASHBOARD = (
   .profile-info { flex: 1; min-width: 0; }
   .profile-info h3 { font-size: 15px; font-weight: 700; }
   .profile-info h3 span { color: var(--gold); }
-  .badge-abonne {
-    display: inline-block; background: var(--green-light);
-    color: var(--green); font-size: 10px; font-weight: 700;
-    padding: 2px 8px; border-radius: 10px; margin-top: 4px;
-  }
   .profile-info p {
     font-size: 12px; color: #757575; margin-top: 4px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -321,9 +396,15 @@ HTML_DASHBOARD = (
     background: rgba(255,255,255,0.2);
     display: flex; align-items: center; justify-content: center;
   }
-  .balance-amount { font-size: 32px; font-weight: 800; margin: 8px 0; position: relative; z-index: 2; }
-  .balance-amount span { font-size: 16px; font-weight: 600; }
-  .balance-sub { font-size: 13px; opacity: 0.8; margin-bottom: 16px; position: relative; z-index: 2; }
+  .balance-amount {
+    font-size: 32px; font-weight: 800; margin: 8px 0;
+    position: relative; z-index: 2;
+  }
+  .balance-amount > span:last-child { font-size: 16px; font-weight: 600; }
+  .balance-sub {
+    font-size: 13px; opacity: 0.8; margin-bottom: 16px;
+    position: relative; z-index: 2;
+  }
   .balance-buttons { display: flex; gap: 10px; position: relative; z-index: 2; }
   .btn-white {
     flex: 1; background: #fff; color: var(--green);
@@ -557,6 +638,23 @@ HTML_DASHBOARD = (
     </button>
   </header>
 
+  <!-- BANNIÈRE INACTIF -->
+  <div class="inactive-banner" id="inactiveBanner">
+    <div class="icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="title">Compte non activé</div>
+      <div class="desc">Payez 3 600 FCFA pour tout débloquer</div>
+    </div>
+    <button class="action" onclick="location.href='/activation'">Activer</button>
+  </div>
+
+  <!-- PROFIL -->
   <div class="profile-card">
     <div class="profile-avatar">
       <span id="userInitial2">A</span>
@@ -564,24 +662,30 @@ HTML_DASHBOARD = (
     </div>
     <div class="profile-info">
       <h3>Bonjour, <span id="userName">...</span></h3>
-      <div class="badge-abonne">Compte actif</div>
+      <div class="badge-status inactive" id="statusBadge">⏳ Chargement...</div>
       <p id="userInfo">TriBoost</p>
     </div>
   </div>
 
+  <!-- SOLDE -->
   <div class="balance-card">
     <div class="balance-label">
       VOS SOLDES DISPONIBLES
       <div class="arrow-circle">›</div>
     </div>
-    <div class="balance-amount">1 048 <span>FCFA</span></div>
-    <div class="balance-sub">Principal 1 048 F · Crypto 0.00 $</div>
+    <div class="balance-amount">
+      <span id="walletBalance" class="skeleton">0000</span> <span>FCFA</span>
+    </div>
+    <div class="balance-sub">
+      Gains totaux : <span id="totalEarned">0</span> FCFA
+    </div>
     <div class="balance-buttons">
-      <button class="btn-white">Retirer</button>
-      <button class="btn-gold">Historique</button>
+      <button class="btn-white" onclick="handleProtectedAction('withdraw')">Retirer</button>
+      <button class="btn-gold" onclick="handleProtectedAction('history')">Historique</button>
     </div>
   </div>
 
+  <!-- SERVICES -->
   <div class="section-title">Nos services</div>
   <div class="services-grid">
 
@@ -641,6 +745,7 @@ HTML_DASHBOARD = (
     </a>
   </div>
 
+  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <a href="/dashboard" class="nav-item active">
       <div class="nav-icon">
@@ -692,13 +797,18 @@ HTML_DASHBOARD = (
 </div>
 
 <script>
+  // ===== RÉCUPÉRATION DES INFOS LOCALES =====
   const token = localStorage.getItem('access_token');
+  const userId = localStorage.getItem('user_id');
   const email = localStorage.getItem('user_email');
   const name = localStorage.getItem('user_name');
   const referralCode = localStorage.getItem('user_referral_code') || 'TB------';
 
-  if (!token) window.location.href = '/login';
+  if (!token || !userId) {
+    window.location.href = '/login';
+  }
 
+  // ===== AFFICHAGE INITIAL =====
   const displayName = name || (email ? email.split('@')[0] : 'utilisateur');
   if (email) {
     document.getElementById('userName').textContent = displayName;
@@ -707,35 +817,136 @@ HTML_DASHBOARD = (
     document.getElementById('userInitial2').textContent = initial;
     document.getElementById('userInfo').textContent = email;
 
-    // Drawer
     document.getElementById('drawerInitial').textContent = initial;
     document.getElementById('drawerName').textContent = displayName;
     document.getElementById('drawerEmail').textContent = email;
     document.getElementById('drawerCode').textContent = referralCode;
   }
 
-  // ===== MENU =====
+  // ===== CHARGER LE PROFIL =====
+  let isActivated = false;
+
+  async function loadProfile() {
+    try {
+      const res = await fetch('/api/auth/profile/' + userId, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          localStorage.clear();
+          window.location.href = '/login';
+          return;
+        }
+        throw new Error('Erreur de chargement');
+      }
+
+      const data = await res.json();
+      const p = data.profile;
+      isActivated = p.is_activated || false;
+
+      // Solde
+      const wb = document.getElementById('walletBalance');
+      wb.classList.remove('skeleton');
+      wb.textContent = Number(p.wallet_balance || 0).toLocaleString('fr-FR');
+
+      document.getElementById('totalEarned').textContent =
+        Number(p.total_earned || 0).toLocaleString('fr-FR');
+
+      // Code parrain
+      if (p.referral_code) {
+        localStorage.setItem('user_referral_code', p.referral_code);
+        document.getElementById('drawerCode').textContent = p.referral_code;
+      }
+
+      // Statut activation
+      updateActivationUI(isActivated);
+
+    } catch (err) {
+      console.error('Erreur chargement profil:', err);
+      const wb = document.getElementById('walletBalance');
+      wb.classList.remove('skeleton');
+      wb.textContent = '0';
+      document.getElementById('statusBadge').textContent = '⚠ Erreur';
+      document.getElementById('statusBadge').className = 'badge-status inactive';
+    }
+  }
+
+  // ===== UI SELON ACTIVATION =====
+  function updateActivationUI(activated) {
+    const badge = document.getElementById('statusBadge');
+    const banner = document.getElementById('inactiveBanner');
+
+    if (activated) {
+      badge.textContent = '✓ Actif';
+      badge.className = 'badge-status active';
+      badge.style.background = '';
+      badge.style.color = '';
+      banner.classList.remove('show');
+    } else {
+      badge.textContent = '⏳ Inactif';
+      badge.className = 'badge-status inactive';
+      badge.style.background = '';
+      badge.style.color = '';
+      banner.classList.add('show');
+    }
+  }
+
+  // ===== ACTIONS PROTÉGÉES =====
+  function handleProtectedAction(action) {
+    if (!isActivated) {
+      vibrate([20, 40, 20]);
+      if (confirm('Votre compte n\\'est pas activé.\\n\\nActivez pour 3 600 FCFA pour accéder à cette fonctionnalité.\\n\\nAller à la page d\\'activation ?')) {
+        window.location.href = '/activation';
+      }
+      return;
+    }
+    if (action === 'withdraw') {
+      alert('Ouverture du formulaire de retrait...');
+    } else if (action === 'history') {
+      alert('Ouverture de l\\'historique...');
+    }
+  }
+
+  // ===== INTERCEPTER LES CLICS SUR LES SERVICES / DRAWER =====
+  document.querySelectorAll('.service-card, .drawer-item').forEach(el => {
+    el.addEventListener('click', function(e) {
+      if (!isActivated) {
+        e.preventDefault();
+        const href = this.getAttribute('href');
+        if (href && href !== '#') {
+          vibrate([20, 40, 20]);
+          if (confirm('Compte non activé.\\n\\nActiver pour 3 600 FCFA ?')) {
+            window.location.href = '/activation';
+          }
+        }
+      }
+    });
+  });
+
+  loadProfile();
+
+  // ===== MENU BURGER =====
   function openMenu() {
     document.getElementById('sideDrawer').classList.add('open');
     document.getElementById('menuOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
     if (navigator.vibrate) navigator.vibrate(8);
   }
-
   function closeMenu() {
     document.getElementById('sideDrawer').classList.remove('open');
     document.getElementById('menuOverlay').classList.remove('open');
     document.body.style.overflow = '';
   }
 
-  // ===== FERMER AVEC BOUTON RETOUR ANDROID =====
+  // ===== BOUTON RETOUR ANDROID =====
   window.addEventListener('popstate', () => {
     if (document.getElementById('sideDrawer').classList.contains('open')) {
       closeMenu();
     }
   });
 
-  // ===== FERMER AVEC ESC =====
+  // ===== ESC =====
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeMenu();
   });
