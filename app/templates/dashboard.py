@@ -86,7 +86,6 @@ HTML_DASHBOARD = (
     transform: translateX(0);
   }
 
-  /* En-tête du drawer */
   .drawer-header {
     padding: 24px 20px 20px;
     background: linear-gradient(135deg, var(--green), var(--green-dark));
@@ -140,10 +139,7 @@ HTML_DASHBOARD = (
     border: 2px solid rgba(255,255,255,0.3);
     flex-shrink: 0;
   }
-  .drawer-user-info {
-    flex: 1;
-    min-width: 0;
-  }
+  .drawer-user-info { flex: 1; min-width: 0; }
   .drawer-user-info h4 {
     font-size: 15px; font-weight: 700;
     margin-bottom: 2px;
@@ -166,7 +162,6 @@ HTML_DASHBOARD = (
     letter-spacing: 0.5px;
   }
 
-  /* Liste des items */
   .drawer-nav {
     padding: 12px 12px 20px;
     flex: 1;
@@ -224,7 +219,6 @@ HTML_DASHBOARD = (
     flex-shrink: 0;
   }
 
-  /* Icônes couleurs */
   .di-green  { background: var(--green-light);  color: var(--green);  }
   .di-orange { background: var(--orange-light); color: var(--orange); }
   .di-gold   { background: var(--gold-light);   color: #f9a825;       }
@@ -233,7 +227,6 @@ HTML_DASHBOARD = (
   .di-purple { background: #f3e5f5;             color: #7b1fa2;       }
   .di-teal   { background: #e0f2f1;             color: #00796b;       }
 
-  /* Déconnexion */
   .drawer-footer {
     padding: 12px 12px 20px;
     border-top: 1px solid var(--border);
@@ -330,7 +323,7 @@ HTML_DASHBOARD = (
     color: #e65100;
   }
 
-  /* ===== SKELETON LOADING ===== */
+  /* ===== SKELETON ===== */
   .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
@@ -345,7 +338,7 @@ HTML_DASHBOARD = (
     100% { background-position: -200% 0; }
   }
 
-  /* ===== PROFIL CARD ===== */
+  /* ===== PROFIL ===== */
   .profile-card {
     margin: 0 20px 20px; padding: 16px;
     border-radius: 20px; border: 1px solid var(--border);
@@ -410,11 +403,13 @@ HTML_DASHBOARD = (
     flex: 1; background: #fff; color: var(--green);
     border: none; padding: 12px; border-radius: 12px;
     font-weight: 700; font-size: 14px; cursor: pointer;
+    font-family: inherit;
   }
   .btn-gold {
     flex: 1; background: var(--gold); color: #212121;
     border: none; padding: 12px; border-radius: 12px;
     font-weight: 700; font-size: 14px; cursor: pointer;
+    font-family: inherit;
   }
 
   /* ===== SERVICES ===== */
@@ -680,8 +675,8 @@ HTML_DASHBOARD = (
       Gains totaux : <span id="totalEarned">0</span> FCFA
     </div>
     <div class="balance-buttons">
-      <button class="btn-white" onclick="handleProtectedAction('withdraw')">Retirer</button>
-      <button class="btn-gold" onclick="handleProtectedAction('history')">Historique</button>
+      <button class="btn-white" onclick="handleAction('withdraw')">Retirer</button>
+      <button class="btn-gold" onclick="handleAction('history')">Historique</button>
     </div>
   </div>
 
@@ -823,26 +818,30 @@ HTML_DASHBOARD = (
     document.getElementById('drawerCode').textContent = referralCode;
   }
 
-  // ===== CHARGER LE PROFIL =====
+  // ===== ÉTAT =====
   let isActivated = false;
 
+  // ===== CHARGEMENT DU PROFIL =====
   async function loadProfile() {
     try {
       const res = await fetch('/api/auth/profile/' + userId, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
 
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/login';
+        return;
+      }
+
       if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-          localStorage.clear();
-          window.location.href = '/login';
-          return;
-        }
-        throw new Error('Erreur de chargement');
+        showDefaultProfile();
+        return;
       }
 
       const data = await res.json();
       const p = data.profile;
+
       isActivated = p.is_activated || false;
 
       // Solde
@@ -859,20 +858,23 @@ HTML_DASHBOARD = (
         document.getElementById('drawerCode').textContent = p.referral_code;
       }
 
-      // Statut activation
       updateActivationUI(isActivated);
 
     } catch (err) {
-      console.error('Erreur chargement profil:', err);
-      const wb = document.getElementById('walletBalance');
-      wb.classList.remove('skeleton');
-      wb.textContent = '0';
-      document.getElementById('statusBadge').textContent = '⚠ Erreur';
-      document.getElementById('statusBadge').className = 'badge-status inactive';
+      console.error('Erreur profil:', err);
+      showDefaultProfile();
     }
   }
 
-  // ===== UI SELON ACTIVATION =====
+  function showDefaultProfile() {
+    const wb = document.getElementById('walletBalance');
+    wb.classList.remove('skeleton');
+    wb.textContent = '0';
+    document.getElementById('totalEarned').textContent = '0';
+    isActivated = false;
+    updateActivationUI(false);
+  }
+
   function updateActivationUI(activated) {
     const badge = document.getElementById('statusBadge');
     const banner = document.getElementById('inactiveBanner');
@@ -880,51 +882,90 @@ HTML_DASHBOARD = (
     if (activated) {
       badge.textContent = '✓ Actif';
       badge.className = 'badge-status active';
-      badge.style.background = '';
-      badge.style.color = '';
       banner.classList.remove('show');
     } else {
       badge.textContent = '⏳ Inactif';
       badge.className = 'badge-status inactive';
-      badge.style.background = '';
-      badge.style.color = '';
       banner.classList.add('show');
     }
   }
 
-  // ===== ACTIONS PROTÉGÉES =====
-  function handleProtectedAction(action) {
+  // ===== BOUTONS RETIRER / HISTORIQUE (bloqués si non activé) =====
+  function handleAction(action) {
     if (!isActivated) {
-      vibrate([20, 40, 20]);
-      if (confirm('Votre compte n\\'est pas activé.\\n\\nActivez pour 3 600 FCFA pour accéder à cette fonctionnalité.\\n\\nAller à la page d\\'activation ?')) {
-        window.location.href = '/activation';
-      }
+      showInactiveToast();
       return;
     }
     if (action === 'withdraw') {
-      alert('Ouverture du formulaire de retrait...');
+      window.location.href = '/paiements';
     } else if (action === 'history') {
-      alert('Ouverture de l\\'historique...');
+      window.location.href = '/paiements#historique';
     }
   }
 
-  // ===== INTERCEPTER LES CLICS SUR LES SERVICES / DRAWER =====
-  document.querySelectorAll('.service-card, .drawer-item').forEach(el => {
-    el.addEventListener('click', function(e) {
-      if (!isActivated) {
-        e.preventDefault();
-        const href = this.getAttribute('href');
-        if (href && href !== '#') {
-          vibrate([20, 40, 20]);
-          if (confirm('Compte non activé.\\n\\nActiver pour 3 600 FCFA ?')) {
-            window.location.href = '/activation';
-          }
-        }
-      }
-    });
-  });
+  // ===== TOAST "COMPTE NON ACTIVÉ" =====
+  function showInactiveToast() {
+    if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
 
-  loadProfile();
+    const old = document.getElementById('inactiveToast');
+    if (old) old.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'inactiveToast';
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #e65100, #bf360c);
+      color: #fff;
+      padding: 16px 20px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(230, 81, 0, 0.5);
+      z-index: 10000;
+      max-width: 340px;
+      text-align: center;
+      line-height: 1.5;
+    `;
+    toast.innerHTML = `
+      <div style="font-size:24px; margin-bottom:6px;">🔒</div>
+      <div><strong>Compte non activé</strong></div>
+      <div style="font-size:12px; opacity:0.9; margin-top:4px;">
+        Activez votre compte pour 3 600 FCFA
+      </div>
+      <button onclick="location.href='/activation'" style="
+        margin-top:12px;
+        background:#fff;
+        color:#e65100;
+        border:none;
+        padding:10px 20px;
+        border-radius:10px;
+        font-weight:800;
+        font-size:13px;
+        cursor:pointer;
+        font-family: inherit;
+        width: 100%;
+      ">Activer maintenant</button>
+      <button onclick="this.parentElement.remove()" style="
+        margin-top:6px;
+        background: transparent;
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.4);
+        padding:8px 20px;
+        border-radius:10px;
+        font-weight:600;
+        font-size:12px;
+        cursor:pointer;
+        font-family: inherit;
+        width: 100%;
+      ">Plus tard</button>
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast?.remove(), 6000);
+  }
 
   // ===== MENU BURGER =====
   function openMenu() {
@@ -939,14 +980,12 @@ HTML_DASHBOARD = (
     document.body.style.overflow = '';
   }
 
-  // ===== BOUTON RETOUR ANDROID =====
   window.addEventListener('popstate', () => {
     if (document.getElementById('sideDrawer').classList.contains('open')) {
       closeMenu();
     }
   });
 
-  // ===== ESC =====
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeMenu();
   });
@@ -957,6 +996,9 @@ HTML_DASHBOARD = (
     localStorage.clear();
     window.location.href = '/login';
   }
+
+  // ===== INIT =====
+  loadProfile();
 </script>
 </body>
 </html>
