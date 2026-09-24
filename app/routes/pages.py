@@ -108,13 +108,16 @@ async def boost_page():
     return HTML_BOOST
 
 
+# ============================================================
+# PAIEMENTS
+# ============================================================
 @router.get("/paiements", response_class=HTMLResponse)
 async def paiements_page():
     return HTML_PAIEMENTS
 
 
 # ============================================================
-# PLACEHOLDERS — uniquement pages pas encore créées
+# PLACEHOLDERS (⚠️ NE JAMAIS METTRE /paiements ICI)
 # ============================================================
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
