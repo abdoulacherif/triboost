@@ -4,7 +4,7 @@ import json
 from fastapi import APIRouter, HTTPException, Request
 
 from app.core.config import settings
-from app.core.supabase_client import get_supabase
+from app.core.supabase_client import get_supabase, get_supabase_admin
 from app.integrations.leekpay import (
     create_checkout,
     get_checkout_status,
@@ -37,30 +37,60 @@ async def initiate_payment(request: Request):
         if len(phone) < 8:
             raise HTTPException(status_code=400, detail="Numéro de téléphone invalide")
 
-        supabase = get_supabase()
-        user_response = supabase.auth.get_user(token)
+        # 1️⃣ Vérifier l'utilisateur avec le client ANON
+        supabase_anon = get_supabase()
+        user_response = supabase_anon.auth.get_user(token)
         if not user_response.user:
             raise HTTPException(status_code=401, detail="Token invalide")
 
         user_id = user_response.user.id
         user_email = user_response.user.email
+        user_meta = user_response.user.user_metadata or {}
 
-        profile = (
-            supabase.table("profiles")
+        # 2️⃣ Lire le profil avec le client ADMIN (bypass RLS)
+        admin = get_supabase_admin()
+        profile_result = (
+            admin.table("profiles")
             .select("full_name, is_activated")
             .eq("id", user_id)
-            .single()
             .execute()
         )
 
-        if not profile.data:
-            raise HTTPException(status_code=404, detail="Profil introuvable")
+        profile_data = None
+        if profile_result.data and len(profile_result.data) > 0:
+            profile_data = profile_result.data[0]
 
-        if profile.data.get("is_activated"):
+        # Si le profil n'existe pas → le créer
+        if not profile_data:
+            print(f"[PAYMENT] Profil manquant pour {user_id}, création...")
+            new_code = "TB" + user_id[:6].upper().replace("-", "")
+            try:
+                insert = admin.table("profiles").insert({
+                    "id": user_id,
+                    "full_name": user_meta.get("full_name", ""),
+                    "phone": user_meta.get("phone", ""),
+                    "country": user_meta.get("country", ""),
+                    "referral_code": new_code,
+                    "is_activated": False,
+                    "wallet_balance": 0,
+                    "total_earned": 0,
+                }).execute()
+                if insert.data and len(insert.data) > 0:
+                    profile_data = insert.data[0]
+                else:
+                    profile_data = {"full_name": "", "is_activated": False}
+            except Exception as e:
+                print(f"[PAYMENT] Erreur création profil: {e}")
+                profile_data = {"full_name": "", "is_activated": False}
+
+        # Déjà activé ?
+        if profile_data.get("is_activated"):
             raise HTTPException(status_code=400, detail="Compte déjà activé")
 
+        # 3️⃣ Référence unique
         reference = f"TRIBOOST-{user_id[:8]}-{int(time.time())}"
 
+        # 4️⃣ Créer le checkout LeekPay
         checkout = await create_checkout(
             amount=3600,
             currency="XOF",
@@ -68,7 +98,7 @@ async def initiate_payment(request: Request):
             return_url=f"{settings.BASE_URL}/activation-success",
             cancel_url=f"{settings.BASE_URL}/activation",
             customer_email=user_email,
-            customer_name=profile.data.get("full_name", ""),
+            customer_name=profile_data.get("full_name", ""),
             customer_phone=phone,
             metadata={
                 "user_id": user_id,
@@ -77,8 +107,9 @@ async def initiate_payment(request: Request):
             },
         )
 
+        # 5️⃣ Enregistrer la tentative en attente
         try:
-            supabase.table("activations").insert({
+            admin.table("activations").insert({
                 "user_id": user_id,
                 "amount": 3600,
                 "payment_method": "leekpay",
@@ -115,25 +146,29 @@ async def payment_status(checkout_id: str, request: Request):
             raise HTTPException(status_code=401, detail="Token manquant")
 
         token = auth_header.replace("Bearer ", "")
-        supabase = get_supabase()
-        user_response = supabase.auth.get_user(token)
+
+        supabase_anon = get_supabase()
+        user_response = supabase_anon.auth.get_user(token)
         if not user_response.user:
             raise HTTPException(status_code=401, detail="Token invalide")
 
         user_id = user_response.user.id
 
+        # Récupérer le statut LeekPay
         status_data = await get_checkout_status(checkout_id)
         status = status_data.get("status")
 
+        admin = get_supabase_admin()
+
         if status == "paid":
             try:
-                supabase.rpc("activate_account", {
+                admin.rpc("activate_account", {
                     "p_user_id": user_id,
                     "p_payment_method": "leekpay",
                     "p_payment_reference": checkout_id,
                 }).execute()
 
-                supabase.table("activations").update({
+                admin.table("activations").update({
                     "status": "completed",
                 }).eq("payment_reference", checkout_id).eq("user_id", user_id).execute()
 
@@ -142,7 +177,7 @@ async def payment_status(checkout_id: str, request: Request):
 
         elif status in ("failed", "cancelled", "expired"):
             try:
-                supabase.table("activations").update({
+                admin.table("activations").update({
                     "status": "failed",
                 }).eq("payment_reference", checkout_id).eq("user_id", user_id).execute()
             except Exception:
@@ -174,6 +209,7 @@ async def leekpay_webhook(request: Request):
 
         print(f"[WEBHOOK] Reçu: event={event_header}, sig={'oui' if signature else 'non'}")
 
+        # Vérifier la signature
         if not verify_webhook_signature(body_bytes, signature):
             print("[WEBHOOK] ⚠️ Signature invalide")
             raise HTTPException(status_code=401, detail="Signature invalide")
@@ -190,10 +226,12 @@ async def leekpay_webhook(request: Request):
         print(f"[WEBHOOK] status={status}, checkout={checkout_id}, user={user_id}")
 
         if status == "paid":
+            admin = get_supabase_admin()
+
+            # Fallback : retrouver l'user via activations
             if not user_id and checkout_id:
-                supabase = get_supabase()
                 act = (
-                    supabase.table("activations")
+                    admin.table("activations")
                     .select("user_id")
                     .eq("payment_reference", checkout_id)
                     .eq("status", "pending")
@@ -203,15 +241,14 @@ async def leekpay_webhook(request: Request):
                     user_id = act.data[0]["user_id"]
 
             if user_id:
-                supabase = get_supabase()
                 try:
-                    supabase.rpc("activate_account", {
+                    admin.rpc("activate_account", {
                         "p_user_id": user_id,
                         "p_payment_method": "leekpay",
                         "p_payment_reference": checkout_id,
                     }).execute()
 
-                    supabase.table("activations").update({
+                    admin.table("activations").update({
                         "status": "completed",
                     }).eq("payment_reference", checkout_id).execute()
 
@@ -222,8 +259,8 @@ async def leekpay_webhook(request: Request):
         elif status in ("failed", "cancelled", "expired"):
             if checkout_id:
                 try:
-                    supabase = get_supabase()
-                    supabase.table("activations").update({
+                    admin = get_supabase_admin()
+                    admin.table("activations").update({
                         "status": "failed",
                     }).eq("payment_reference", checkout_id).execute()
                 except Exception:
@@ -235,4 +272,5 @@ async def leekpay_webhook(request: Request):
         raise
     except Exception as e:
         print(f"[WEBHOOK] ❌ Erreur: {e}")
+        # Retourner 200 pour éviter les retries infinis de LeekPay
         return {"success": False, "error": str(e)}
