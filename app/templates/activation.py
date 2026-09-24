@@ -5,212 +5,184 @@ HTML_ACTIVATION = (
     + CSS_COMMUN
     + """
 <style>
-  .wrap { justify-content: flex-start; padding-top: 20px; }
+  :root {
+    --gold-light: #fff8e1;
+    --orange: #f57c00;
+    --orange-light: #fff3e0;
+  }
+  body { background: #f5f5f5; }
+  .wrap {
+    width: 100%; max-width: 480px;
+    background: #fff;
+    min-height: 100vh;
+    padding: 20px 24px calc(20px + var(--safe-bottom));
+    padding-top: var(--safe-top);
+    display: flex;
+    flex-direction: column;
+  }
   .topbar-act {
     display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   .back-icon {
     width: 40px; height: 40px; border-radius: 12px;
     background: var(--green-light); color: var(--green);
     border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
   }
-  .activation-title {
-    font-size: 24px; font-weight: 800;
-    text-align: center; margin-bottom: 8px;
-  }
-  .activation-sub {
-    text-align: center; color: var(--text-muted);
-    font-size: 14px; margin-bottom: 28px; line-height: 1.5;
-  }
-
-  /* Carte montant */
   .amount-card {
     background: linear-gradient(135deg, var(--green), var(--green-dark));
     border-radius: 24px;
-    padding: 32px 24px;
+    padding: 28px 24px;
     color: #fff;
     text-align: center;
     position: relative;
     overflow: hidden;
     box-shadow: 0 12px 30px rgba(46, 125, 50, 0.3);
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   .amount-card::before {
     content: ''; position: absolute; top: -60px; right: -60px;
     width: 200px; height: 200px;
     background: rgba(255,255,255,0.1); border-radius: 50%;
   }
-  .amount-card::after {
-    content: ''; position: absolute; bottom: -50px; left: -50px;
-    width: 150px; height: 150px;
-    background: rgba(251, 192, 45, 0.2); border-radius: 50%;
-  }
   .amount-label {
-    font-size: 12px; font-weight: 700; opacity: 0.9;
+    font-size: 11px; font-weight: 700; opacity: 0.9;
     text-transform: uppercase; letter-spacing: 1px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     position: relative; z-index: 2;
   }
   .amount-value {
-    font-size: 52px; font-weight: 900; line-height: 1;
+    font-size: 44px; font-weight: 900; line-height: 1;
     position: relative; z-index: 2;
     margin-bottom: 6px;
   }
-  .amount-value span {
-    font-size: 22px; font-weight: 700;
-  }
+  .amount-value span { font-size: 20px; font-weight: 700; }
   .amount-period {
-    font-size: 13px; opacity: 0.85;
+    font-size: 12px; opacity: 0.85;
     position: relative; z-index: 2;
+  }
+
+  /* Infos */
+  .info-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--green-light);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* Formulaire */
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block; font-size: 12px;
+    font-weight: 700; margin-bottom: 6px;
+    color: var(--text-dark);
+  }
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    height: 52px;
+    padding: 0 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--text-dark);
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fff;
+    -webkit-appearance: none;
+  }
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+  }
+  .form-group select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23757575' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
   }
 
   /* Avantages */
   .benefits-title {
-    font-size: 15px; font-weight: 800;
-    margin-bottom: 14px;
-    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 800;
+    margin: 20px 0 12px;
+    display: flex; align-items: center; gap: 6px;
   }
   .benefits-list {
-    display: flex; flex-direction: column; gap: 12px;
-    margin-bottom: 28px;
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 20px;
   }
   .benefit-item {
-    display: flex; align-items: center; gap: 14px;
-    background: #fff;
-    border: 1px solid var(--border);
-    padding: 14px;
-    border-radius: 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px;
+    color: var(--text-dark);
   }
-  .benefit-icon {
-    width: 40px; height: 40px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .benefit-text {
-    flex: 1;
-  }
-  .benefit-text .title {
-    font-size: 14px; font-weight: 700;
-    margin-bottom: 2px;
-  }
-  .benefit-text .desc {
-    font-size: 12px; color: var(--text-muted);
-  }
-
-  .bi-green { background: var(--green-light); color: var(--green); }
-  .bi-gold  { background: #fff8e1; color: #f9a825; }
-  .bi-red   { background: var(--red-light); color: var(--red); }
-  .bi-blue  { background: #e3f2fd; color: #1976d2; }
-
-  /* Méthode de paiement */
-  .payment-methods {
-    display: flex; flex-direction: column; gap: 10px;
-    margin-bottom: 20px;
-  }
-  .payment-option {
-    display: flex; align-items: center; gap: 14px;
-    background: #fff;
-    border: 2px solid var(--border);
-    padding: 14px 16px;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .payment-option.selected {
-    border-color: var(--green);
-    background: var(--green-light);
-  }
-  .payment-option input {
-    display: none;
-  }
-  .payment-radio {
-    width: 22px; height: 22px;
+  .benefit-item .check {
+    width: 20px; height: 20px;
     border-radius: 50%;
-    border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: 0.2s;
-  }
-  .payment-option.selected .payment-radio {
-    border-color: var(--green);
-  }
-  .payment-option.selected .payment-radio::after {
-    content: '';
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: var(--green);
-  }
-  .payment-logo {
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-  .payment-info {
-    flex: 1;
-  }
-  .payment-info .title {
-    font-size: 14px; font-weight: 700;
-  }
-  .payment-info .desc {
-    font-size: 11px; color: var(--text-muted);
-  }
-
-  /* Info solde actuel */
-  .balance-info {
-    background: #fff8e1;
-    border: 1.5px solid var(--gold);
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-  }
-  .balance-info .label {
-    color: #6d4c00;
-    font-weight: 600;
-  }
-  .balance-info .value {
-    color: #6d4c00;
-    font-weight: 800;
-    font-size: 16px;
-  }
-
-  /* Badge status */
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .status-badge.inactive {
-    background: #fff3e0;
-    color: #e65100;
-  }
-  .status-badge.active {
     background: var(--green-light);
     color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Bouton */
+  .btn-pay {
+    width: 100%;
+    height: 56px;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 16px;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(46, 125, 50, 0.35);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.15s;
+  }
+  .btn-pay:active { transform: scale(0.98); }
+  .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .secure-info {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
   }
 </style>
 </head>
 <body>
-<div class="progress-bar" id="progressBar"></div>
-
 <div class="wrap">
 
   <div class="topbar-act">
-    <button class="back-icon" onclick="location.href='/dashboard'">
+    <a href="/dashboard" class="back-icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="15 18 9 12 15 6"></polyline>
       </svg>
-    </button>
+    </a>
     <div class="logo" style="font-size:18px;">Tri<span>Boost</span></div>
     <div style="width:40px;"></div>
   </div>
@@ -218,125 +190,97 @@ HTML_ACTIVATION = (
   <div id="errorMsg" class="alert error"></div>
   <div id="successMsg" class="alert success"></div>
 
-  <!-- Carte montant -->
+  <!-- MONTANT -->
   <div class="amount-card">
     <div class="amount-label">Frais d'activation unique</div>
     <div class="amount-value">3 600 <span>FCFA</span></div>
     <div class="amount-period">Paiement unique · Accès à vie</div>
   </div>
 
-  <!-- Avantages -->
-  <div class="benefits-title">✨ Ce que vous débloquez</div>
-  <div class="benefits-list">
-
-    <div class="benefit-item">
-      <div class="benefit-icon bi-green">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-      </div>
-      <div class="benefit-text">
-        <div class="title">Système d'affiliation 3 niveaux</div>
-        <div class="desc">Gagnez sur vos filleuls directs et indirects</div>
-      </div>
-    </div>
-
-    <div class="benefit-item">
-      <div class="benefit-icon bi-gold">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-          <polyline points="17 6 23 6 23 12"></polyline>
-        </svg>
-      </div>
-      <div class="benefit-text">
-        <div class="title">Commissions sur les ventes</div>
-        <div class="desc">40% N1 · 15% N2 · 5% N3</div>
-      </div>
-    </div>
-
-    <div class="benefit-item">
-      <div class="benefit-icon bi-blue">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-        </svg>
-      </div>
-      <div class="benefit-text">
-        <div class="title">Accès au Shop & Marché</div>
-        <div class="desc">Achetez, vendez et touchez des bonus</div>
-      </div>
-    </div>
-
-    <div class="benefit-item">
-      <div class="benefit-icon bi-red">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-          <line x1="1" y1="10" x2="23" y2="10"></line>
-        </svg>
-      </div>
-      <div class="benefit-text">
-        <div class="title">Retraits Mobile Money</div>
-        <div class="desc">MTN MoMo · Orange Money · Banque</div>
-      </div>
-    </div>
-
+  <div class="info-row">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+    </svg>
+    Paiement sécurisé via LeekPay
   </div>
 
-  <!-- Solde actuel -->
-  <div class="balance-info">
-    <span class="label">Solde actuel du compte</span>
-    <span class="value" id="currentBalance">0 FCFA</span>
-  </div>
+  <!-- FORMULAIRE -->
+  <form id="paymentForm" onsubmit="submitPayment(event)">
 
-  <!-- Méthodes de paiement -->
-  <div class="benefits-title">💳 Méthode de paiement</div>
-  <div class="payment-methods">
-
-    <div class="payment-option selected" onclick="selectPayment(this, 'mtn')">
-      <div class="payment-radio"></div>
-      <div class="payment-logo">📱</div>
-      <div class="payment-info">
-        <div class="title">MTN Mobile Money</div>
-        <div class="desc">Paiement via *126#</div>
-      </div>
-      <input type="radio" name="payment" value="mtn" checked>
+    <div class="form-group">
+      <label>Pays</label>
+      <select id="country" required>
+        <option value="CM" selected>🇨🇲 Cameroun</option>
+        <option value="CI">🇨🇮 Côte d'Ivoire</option>
+        <option value="SN">🇸🇳 Sénégal</option>
+        <option value="BJ">🇧🇯 Bénin</option>
+        <option value="TG">🇹🇬 Togo</option>
+        <option value="BF">🇧🇫 Burkina Faso</option>
+        <option value="ML">🇲🇱 Mali</option>
+        <option value="NE">🇳🇪 Niger</option>
+        <option value="GN">🇬🇳 Guinée</option>
+        <option value="CD">🇨🇩 RD Congo</option>
+        <option value="CG">🇨🇬 Congo</option>
+        <option value="GA">🇬🇦 Gabon</option>
+        <option value="TD">🇹🇩 Tchad</option>
+        <option value="CF">🇨🇫 Centrafrique</option>
+        <option value="GQ">🇬🇶 Guinée Équatoriale</option>
+      </select>
     </div>
 
-    <div class="payment-option" onclick="selectPayment(this, 'orange')">
-      <div class="payment-radio"></div>
-      <div class="payment-logo">🟠</div>
-      <div class="payment-info">
-        <div class="title">Orange Money</div>
-        <div class="desc">Paiement via #150#</div>
-      </div>
-      <input type="radio" name="payment" value="orange">
+    <div class="form-group">
+      <label>Numéro Mobile Money</label>
+      <input
+        type="tel"
+        id="phone"
+        required
+        placeholder="+237 6XX XXX XXX"
+        inputmode="tel"
+        autocomplete="tel">
     </div>
 
-    <div class="payment-option" onclick="selectPayment(this, 'wallet')">
-      <div class="payment-radio"></div>
-      <div class="payment-logo">💰</div>
-      <div class="payment-info">
-        <div class="title">Solde TriBoost</div>
-        <div class="desc">Utiliser votre solde disponible</div>
+    <!-- AVANTAGES -->
+    <div class="benefits-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+      Ce que vous débloquez
+    </div>
+    <div class="benefits-list">
+      <div class="benefit-item">
+        <div class="check">✓</div>
+        Système d'affiliation 3 niveaux
       </div>
-      <input type="radio" name="payment" value="wallet">
+      <div class="benefit-item">
+        <div class="check">✓</div>
+        Commissions : 1 500 F / 750 F / 325 F
+      </div>
+      <div class="benefit-item">
+        <div class="check">✓</div>
+        Accès au Marché et à la Boutique
+      </div>
+      <div class="benefit-item">
+        <div class="check">✓</div>
+        Retraits Mobile Money
+      </div>
     </div>
 
-  </div>
+    <!-- BOUTON -->
+    <button type="submit" class="btn-pay" id="payBtn">
+      <span id="payBtnText">Payer 3 600 FCFA</span>
+    </button>
 
-  <button type="button" class="btn-primary" id="activateBtn" onclick="activateAccount()">
-    <span>Payer 3 600 FCFA et activer</span>
-  </button>
+    <div class="secure-info">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      Paiement 100% sécurisé · LeekPay
+    </div>
 
-  <div class="footer" style="margin-top:20px; font-size:12px;">
-    Une fois activé, votre compte est actif <strong>à vie</strong>.<br>
-    Aucun frais mensuel.
-  </div>
-
+  </form>
 </div>
+
 """
     + JS_COMMUN
     + """
@@ -348,9 +292,7 @@ HTML_ACTIVATION = (
     window.location.href = '/login';
   }
 
-  let selectedMethod = 'mtn';
-
-  // ===== VÉRIFIER SI DÉJÀ ACTIVÉ =====
+  // Vérifier si déjà activé
   async function checkActivation() {
     try {
       const res = await fetch('/api/auth/profile/' + userId, {
@@ -358,71 +300,63 @@ HTML_ACTIVATION = (
       });
       if (!res.ok) return;
       const data = await res.json();
-      const profile = data.profile;
-
-      if (profile.wallet_balance) {
-        document.getElementById('currentBalance').textContent =
-          Number(profile.wallet_balance).toLocaleString('fr-FR') + ' FCFA';
+      if (data.profile?.is_activated) {
+        window.location.href = '/dashboard';
       }
-
-      if (profile.is_activated) {
-        // Déjà activé → rediriger
-        showSuccess('Votre compte est déjà activé ! Redirection...');
-        setTimeout(() => window.location.href = '/dashboard', 1200);
-      }
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (e) {}
   }
   checkActivation();
 
-  // ===== SÉLECTION MÉTHODE =====
-  function selectPayment(el, method) {
-    document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
-    el.classList.add('selected');
-    el.querySelector('input').checked = true;
-    selectedMethod = method;
+  // ===== SOUMISSION DU PAIEMENT =====
+  async function submitPayment(e) {
+    e.preventDefault();
     vibrate(8);
-  }
 
-  // ===== ACTIVER =====
-  async function activateAccount() {
-    const btn = document.getElementById('activateBtn');
-    vibrate(10);
-    setButtonLoading(btn, true);
-    showProgress();
-    document.getElementById('errorMsg').style.display = 'none';
-    document.getElementById('successMsg').style.display = 'none';
+    const btn = document.getElementById('payBtn');
+    const btnText = document.getElementById('payBtnText');
+    const errEl = document.getElementById('errorMsg');
+    errEl.style.display = 'none';
+
+    const country = document.getElementById('country').value;
+    const phone = document.getElementById('phone').value.trim();
+
+    if (!phone || phone.length < 8) {
+      errEl.textContent = '⚠ Numéro de téléphone invalide';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btnText.innerHTML = '<div class="spinner"></div>';
 
     try {
-      const res = await fetch('/api/auth/activate', {
+      const res = await fetch('/api/payments/initiate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token,
         },
-        body: JSON.stringify({
-          payment_method: selectedMethod,
-          payment_reference: 'TRIBOOST-' + Date.now(),
-        }),
+        body: JSON.stringify({ phone, country }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.detail || 'Erreur lors de l\\'activation');
+      if (!res.ok) throw new Error(data.detail || 'Erreur de paiement');
+
+      // Rediriger vers LeekPay
+      if (data.payment_url) {
+        vibrate(15);
+        window.location.href = data.payment_url;
+      } else {
+        throw new Error('URL de paiement manquante');
       }
 
-      vibrate(30);
-      hideProgress();
-      showSuccess('🎉 Compte activé ! Redirection...');
-      setTimeout(() => window.location.href = '/dashboard', 1500);
-
     } catch (err) {
-      hideProgress();
       vibrate([30, 50, 30]);
-      showError(err.message);
-      setButtonLoading(btn, false, 'Payer 3 600 FCFA et activer');
+      errEl.textContent = '⚠ ' + err.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btnText.textContent = 'Payer 3 600 FCFA';
     }
   }
 </script>
