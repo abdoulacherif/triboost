@@ -3,7 +3,9 @@ from fastapi.responses import HTMLResponse
 
 from app.templates.activation import HTML_ACTIVATION
 from app.templates.activation_success import HTML_ACTIVATION_SUCCESS
+from app.templates.affaire import HTML_AFFAIRE
 from app.templates.affilie import HTML_AFFILIE
+from app.templates.boost import HTML_BOOST
 from app.templates.boutique import HTML_BOUTIQUE
 from app.templates.commissions import HTML_COMMISSIONS
 from app.templates.dashboard import HTML_DASHBOARD
@@ -12,8 +14,6 @@ from app.templates.historique import HTML_HISTORIQUE
 from app.templates.login import HTML_LOGIN
 from app.templates.marche import HTML_MARCHE
 from app.templates.placeholder import (
-    ICON_AFFAIRE,
-    ICON_BOOST,
     ICON_CHAT,
     ICON_FORMATION,
     ICON_PAIEMENTS,
@@ -83,9 +83,6 @@ async def commissions_page():
     return HTML_COMMISSIONS
 
 
-# ============================================================
-# BOUTIQUE
-# ============================================================
 @router.get("/boutique", response_class=HTMLResponse)
 async def boutique_page():
     return HTML_BOUTIQUE
@@ -96,22 +93,24 @@ async def formation_detail_page(formation_id: str):
     return HTML_FORMATION_DETAIL
 
 
-# ============================================================
-# TÂCHES
-# ============================================================
 @router.get("/tache", response_class=HTMLResponse)
 async def tache_page():
     return HTML_TACHES
 
 
-# ============================================================
-# PLACEHOLDERS (⚠️ NE JAMAIS METTRE /boutique OU /tache ICI)
-# ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
-    return make_placeholder("Affaire", ICON_AFFAIRE, "Opportunités business.", "green")
+    return HTML_AFFAIRE
 
 
+@router.get("/boost", response_class=HTMLResponse)
+async def boost_page():
+    return HTML_BOOST
+
+
+# ============================================================
+# PLACEHOLDERS (⚠️ NE JAMAIS METTRE /affaire OU /boost ICI)
+# ============================================================
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
     return make_placeholder("Tourner", ICON_TOURNER, "Roue de la chance.", "purple")
@@ -125,11 +124,6 @@ async def formation_page():
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_page():
     return make_placeholder("Shop", ICON_SHOP, "Produits & services.", "teal")
-
-
-@router.get("/boost", response_class=HTMLResponse)
-async def boost_page():
-    return make_placeholder("Boost", ICON_BOOST, "Boostez vos gains.", "gold")
 
 
 @router.get("/paiements", response_class=HTMLResponse)
