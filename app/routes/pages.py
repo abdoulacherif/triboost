@@ -109,7 +109,7 @@ async def boost_page():
 
 
 # ============================================================
-# PLACEHOLDERS (⚠️ NE JAMAIS METTRE /affaire OU /boost ICI)
+# PLACEHOLDERS (⚠️ PAS /affaire, PAS /boost)
 # ============================================================
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
