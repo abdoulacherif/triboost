@@ -13,10 +13,10 @@ from app.templates.formation_detail import HTML_FORMATION_DETAIL
 from app.templates.historique import HTML_HISTORIQUE
 from app.templates.login import HTML_LOGIN
 from app.templates.marche import HTML_MARCHE
+from app.templates.paiements import HTML_PAIEMENTS
 from app.templates.placeholder import (
     ICON_CHAT,
     ICON_FORMATION,
-    ICON_PAIEMENTS,
     ICON_SHOP,
     ICON_TOURNER,
     make_placeholder,
@@ -83,9 +83,6 @@ async def commissions_page():
     return HTML_COMMISSIONS
 
 
-# ============================================================
-# BOUTIQUE
-# ============================================================
 @router.get("/boutique", response_class=HTMLResponse)
 async def boutique_page():
     return HTML_BOUTIQUE
@@ -96,33 +93,28 @@ async def formation_detail_page(formation_id: str):
     return HTML_FORMATION_DETAIL
 
 
-# ============================================================
-# TÂCHES
-# ============================================================
 @router.get("/tache", response_class=HTMLResponse)
 async def tache_page():
     return HTML_TACHES
 
 
-# ============================================================
-# AFFAIRE
-# ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
     return HTML_AFFAIRE
 
 
-# ============================================================
-# BOOST
-# ============================================================
 @router.get("/boost", response_class=HTMLResponse)
 async def boost_page():
     return HTML_BOOST
 
 
+@router.get("/paiements", response_class=HTMLResponse)
+async def paiements_page():
+    return HTML_PAIEMENTS
+
+
 # ============================================================
-# PLACEHOLDERS — uniquement les pages pas encore créées
-# ⚠️ NE JAMAIS METTRE /affaire, /boost, /boutique, /tache ICI
+# PLACEHOLDERS — uniquement pages pas encore créées
 # ============================================================
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
@@ -137,11 +129,6 @@ async def formation_page():
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_page():
     return make_placeholder("Shop", ICON_SHOP, "Produits & services.", "teal")
-
-
-@router.get("/paiements", response_class=HTMLResponse)
-async def paiements_page():
-    return make_placeholder("Paiements", ICON_PAIEMENTS, "Retraits Mobile Money.", "green")
 
 
 @router.get("/chat", response_class=HTMLResponse)
