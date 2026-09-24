@@ -18,7 +18,8 @@ async def api_register(payload: RegisterRequest):
                 "data": {
                     "full_name": payload.full_name,
                     "phone": payload.phone,
-                    "referral_code": payload.referral_code,
+                    "country": payload.country,
+                    "referral_code": payload.referral_code or "",
                 }
             },
         })
@@ -50,6 +51,20 @@ async def api_login(payload: LoginRequest):
         if response.session is None:
             raise HTTPException(status_code=401, detail="Identifiants invalides")
 
+        # Récupérer le profil
+        profile_data = None
+        try:
+            profile = (
+                supabase.table("profiles")
+                .select("*")
+                .eq("id", response.user.id)
+                .single()
+                .execute()
+            )
+            profile_data = profile.data
+        except Exception:
+            profile_data = None
+
         return {
             "success": True,
             "access_token": response.session.access_token,
@@ -59,9 +74,32 @@ async def api_login(payload: LoginRequest):
                 "id": response.user.id,
                 "email": response.user.email,
                 "full_name": response.user.user_metadata.get("full_name", ""),
+                "referral_code": profile_data.get("referral_code") if profile_data else None,
             },
         }
     except HTTPException:
         raise
     except Exception:
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+
+
+@router.get("/check-referral/{code}")
+async def check_referral(code: str):
+    """Vérifie si un code de parrainage existe."""
+    try:
+        supabase = get_supabase()
+        result = supabase.rpc(
+            "check_referral_code",
+            {"code": code.upper().strip()}
+        ).execute()
+
+        if result.data and len(result.data) > 0:
+            referrer = result.data[0]
+            return {
+                "valid": True,
+                "full_name": referrer.get("full_name", ""),
+                "country": referrer.get("country", ""),
+            }
+        return {"valid": False}
+    except Exception:
+        return {"valid": False}
