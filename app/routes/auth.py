@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 
-from app.core.supabase_client import get_supabase
+from app.core.supabase_client import get_supabase, get_supabase_admin
 from app.models.schemas import LoginRequest, RegisterRequest
 
 router = APIRouter()
@@ -11,6 +11,7 @@ router = APIRouter()
 # ============================================================
 @router.post("/register")
 async def api_register(payload: RegisterRequest):
+    """Crée un compte via Supabase Auth."""
     try:
         supabase = get_supabase()
         response = supabase.auth.sign_up({
@@ -45,6 +46,7 @@ async def api_register(payload: RegisterRequest):
 # ============================================================
 @router.post("/login")
 async def api_login(payload: LoginRequest):
+    """Connexion via Supabase Auth."""
     try:
         supabase = get_supabase()
         response = supabase.auth.sign_in_with_password({
@@ -59,11 +61,12 @@ async def api_login(payload: LoginRequest):
         user_email = response.user.email
         user_meta = response.user.user_metadata or {}
 
-        # Récupérer ou créer le profil
+        # Lire le profil avec le client ADMIN (bypass RLS)
         profile_data = None
         try:
+            admin = get_supabase_admin()
             profile = (
-                supabase.table("profiles")
+                admin.table("profiles")
                 .select("*")
                 .eq("id", user_id)
                 .execute()
@@ -73,11 +76,12 @@ async def api_login(payload: LoginRequest):
         except Exception as e:
             print(f"[LOGIN] Erreur récupération profil: {e}")
 
-        # Si pas de profil → le créer (fallback si trigger absent)
+        # Si pas de profil → le créer via admin
         if not profile_data:
             new_code = "TB" + user_id[:6].upper().replace("-", "")
             try:
-                insert = supabase.table("profiles").insert({
+                admin = get_supabase_admin()
+                insert = admin.table("profiles").insert({
                     "id": user_id,
                     "full_name": user_meta.get("full_name", ""),
                     "phone": user_meta.get("phone", ""),
@@ -116,9 +120,10 @@ async def api_login(payload: LoginRequest):
 # ============================================================
 @router.get("/check-referral/{code}")
 async def check_referral(code: str):
+    """Vérifie si un code de parrainage existe."""
     try:
-        supabase = get_supabase()
-        result = supabase.rpc(
+        admin = get_supabase_admin()
+        result = admin.rpc(
             "check_referral_code",
             {"code": code.upper().strip()}
         ).execute()
@@ -131,26 +136,28 @@ async def check_referral(code: str):
                 "country": referrer.get("country", ""),
             }
         return {"valid": False}
-    except Exception:
+    except Exception as e:
+        print(f"[CHECK-REF] Erreur: {e}")
         return {"valid": False}
 
 
 # ============================================================
-# PROFIL UTILISATEUR (avec fallback création)
+# PROFIL UTILISATEUR
 # ============================================================
 @router.get("/profile/{user_id}")
 async def get_profile(user_id: str, request: Request):
+    """Récupère le profil complet d'un utilisateur."""
     try:
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="Token manquant")
 
         token = auth_header.replace("Bearer ", "")
-        supabase = get_supabase()
 
-        # Vérifier le token — seul cas où on renvoie 401
+        # 1️⃣ Vérifier l'utilisateur avec le client ANON
+        supabase_anon = get_supabase()
         try:
-            user_response = supabase.auth.get_user(token)
+            user_response = supabase_anon.auth.get_user(token)
         except Exception:
             raise HTTPException(status_code=401, detail="Token invalide")
 
@@ -160,22 +167,25 @@ async def get_profile(user_id: str, request: Request):
         user = user_response.user
         user_meta = user.user_metadata or {}
 
-        # Récupérer le profil
+        # 2️⃣ Lire le profil avec le client ADMIN (bypass RLS)
+        admin = get_supabase_admin()
         result = (
-            supabase.table("profiles")
+            admin.table("profiles")
             .select("*")
             .eq("id", user_id)
             .execute()
         )
 
-        # Si profil existe → retourner
         if result.data and len(result.data) > 0:
+            print(f"[PROFILE] ✅ Profil réel trouvé pour {user_id}")
             return {"success": True, "profile": result.data[0]}
 
-        # Sinon → le créer à la volée
+        # 3️⃣ Profil manquant → créer avec le client ADMIN
+        print(f"[PROFILE] ⚠️ Profil manquant, création pour {user_id}")
         new_code = "TB" + user_id[:6].upper().replace("-", "")
+
         try:
-            insert = supabase.table("profiles").insert({
+            insert = admin.table("profiles").insert({
                 "id": user.id,
                 "full_name": user_meta.get("full_name", ""),
                 "phone": user_meta.get("phone", ""),
@@ -187,11 +197,13 @@ async def get_profile(user_id: str, request: Request):
             }).execute()
 
             if insert.data and len(insert.data) > 0:
+                print(f"[PROFILE] ✅ Profil créé pour {user_id}")
                 return {"success": True, "profile": insert.data[0], "created": True}
         except Exception as e:
-            print(f"[PROFILE] Erreur création: {e}")
+            print(f"[PROFILE] ❌ Erreur création: {e}")
 
-        # Fallback ultime : profil virtuel (pas d'erreur, dashboard fonctionne)
+        # 4️⃣ Fallback ultime (ne devrait plus arriver)
+        print(f"[PROFILE] ⚠️ Fallback virtuel pour {user_id}")
         return {
             "success": True,
             "profile": {
@@ -215,10 +227,11 @@ async def get_profile(user_id: str, request: Request):
 
 
 # ============================================================
-# ACTIVATION
+# ACTIVATION MANUELLE (admin / test uniquement)
 # ============================================================
 @router.post("/activate")
 async def activate(request: Request):
+    """Active le compte manuellement (⚠️ usage admin / test)."""
     try:
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
@@ -229,12 +242,13 @@ async def activate(request: Request):
         payment_method = body.get("payment_method", "manual")
         payment_reference = body.get("payment_reference", "")
 
-        supabase = get_supabase()
-        user_response = supabase.auth.get_user(token)
+        supabase_anon = get_supabase()
+        user_response = supabase_anon.auth.get_user(token)
         if not user_response.user:
             raise HTTPException(status_code=401, detail="Token invalide")
 
-        result = supabase.rpc(
+        admin = get_supabase_admin()
+        result = admin.rpc(
             "activate_account",
             {
                 "p_user_id": user_response.user.id,
