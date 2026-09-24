@@ -6,6 +6,7 @@ class RegisterRequest(BaseModel):
     password: str = Field(..., min_length=6)
     full_name: str = ""
     phone: str = ""
+    country: str = ""
     referral_code: str | None = None
 
 
@@ -14,6 +15,7 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class AuthResponse(BaseModel):
-    success: bool
-    message: str | None = None
+class ReferralCheckResponse(BaseModel):
+    valid: bool
+    full_name: str | None = None
+    country: str | None = None
