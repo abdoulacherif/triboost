@@ -1,13 +1,61 @@
-{% extends "base.html" %}
-
-{% block title %}Accueil — TriBoost{% endblock %}
-
-{% block extra_head %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Accueil — TriBoost</title>
 <style>
-  /* ===== Profil card ===== */
+  :root {
+    --green: #2e7d32;
+    --green-dark: #1b5e20;
+    --green-light: #e8f5e9;
+    --gold: #fbc02d;
+    --gold-light: #fff8e1;
+    --orange: #f57c00;
+    --orange-light: #fff3e0;
+    --red: #d32f2f;
+    --red-light: #ffebee;
+    --text-dark: #212121;
+    --text-muted: #757575;
+    --border: #eeeeee;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: #fcfcfc; color: var(--text-dark);
+    display: flex; justify-content: center; min-height: 100vh;
+  }
+  .app {
+    width: 100%; max-width: 420px;
+    background: #fff; min-height: 100vh;
+    padding-bottom: 100px; position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  }
+
+  /* TOPBAR */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px;
+  }
+  .avatar-top {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--green); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 14px;
+  }
+  .logo { font-size: 22px; font-weight: 800; color: var(--green); }
+  .logo span { color: var(--gold); }
+  .menu-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--green-light); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: none;
+  }
+
+  /* PROFIL */
   .profile-card {
-    margin: 0 20px 20px;
-    padding: 16px;
+    margin: 0 20px 20px; padding: 16px;
     border-radius: var(--radius);
     border: 1px solid var(--border);
     display: flex; align-items: center; gap: 12px;
@@ -29,25 +77,17 @@
   .profile-info h3 { font-size: 15px; font-weight: 700; }
   .profile-info h3 span { color: var(--gold); }
   .badge-abonne {
-    display: inline-block; background: var(--green-light); color: var(--green);
-    font-size: 10px; font-weight: 700; padding: 2px 8px;
-    border-radius: 10px; margin-top: 4px;
+    display: inline-block; background: var(--green-light);
+    color: var(--green); font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; margin-top: 4px;
   }
   .profile-info p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-  .profile-actions { display: flex; align-items: center; gap: 8px; }
-  .icon-btn {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: var(--green-light); color: var(--green);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; border: none;
-  }
 
-  /* ===== Balance card ===== */
+  /* SOLDE */
   .balance-card {
     margin: 0 20px 24px;
     background: linear-gradient(135deg, var(--green), var(--green-dark));
-    border-radius: var(--radius);
-    padding: 20px; color: #fff;
+    border-radius: var(--radius); padding: 20px; color: #fff;
     position: relative; overflow: hidden;
     box-shadow: 0 8px 20px rgba(46, 125, 50, 0.3);
   }
@@ -77,20 +117,19 @@
   .balance-buttons { display: flex; gap: 10px; position: relative; z-index: 2; }
   .btn-white {
     flex: 1; background: #fff; color: var(--green);
-    padding: 12px; border-radius: 12px; font-weight: 700; font-size: 14px;
-    cursor: pointer; border: none;
+    border: none; padding: 12px; border-radius: 12px;
+    font-weight: 700; font-size: 14px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 6px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
   .btn-gold {
     flex: 1; background: var(--gold); color: var(--text-dark);
-    padding: 12px; border-radius: 12px; font-weight: 700; font-size: 14px;
-    cursor: pointer; border: none;
+    border: none; padding: 12px; border-radius: 12px;
+    font-weight: 700; font-size: 14px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 6px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
 
-  /* ===== Services ===== */
+  /* SERVICES */
+  .section-title { margin: 0 20px 14px; font-size: 18px; font-weight: 800; }
   .services-grid {
     display: grid; grid-template-columns: 1fr 1fr;
     gap: 14px; padding: 0 20px;
@@ -98,186 +137,196 @@
   .service-card {
     background: #fff; border: 1px solid var(--border);
     border-radius: var(--radius); padding: 16px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
     display: flex; flex-direction: column; gap: 12px;
-    cursor: pointer; transition: transform 0.2s;
     text-decoration: none; color: inherit;
+    transition: transform 0.2s;
   }
   .service-card:active { transform: scale(0.98); }
   .service-icon {
     width: 100%; height: 80px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
   }
-  .icon-green  { background: var(--green-light);  color: var(--green);  }
+  .icon-green { background: var(--green-light); color: var(--green); }
   .icon-orange { background: var(--orange-light); color: var(--orange); }
-  .icon-gold   { background: var(--gold-light);   color: var(--gold);   }
-  .icon-red    { background: var(--red-light);    color: var(--red);    }
+  .icon-gold { background: var(--gold-light); color: var(--gold); }
+  .icon-red { background: var(--red-light); color: var(--red); }
   .service-title { font-size: 14px; font-weight: 700; }
   .service-desc { font-size: 12px; color: var(--text-muted); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0;
+    left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 420px;
+    background: #fff; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 12px 10px 20px;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    z-index: 100;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--text-muted); text-decoration: none;
+    font-weight: 500; position: relative;
+  }
+  .nav-item.active { color: var(--green); font-weight: 700; }
+  .nav-item.active .nav-icon { background: var(--green-light); color: var(--green); }
+  .nav-icon {
+    width: 40px; height: 30px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
 </style>
-{% endblock %}
+</head>
+<body>
+<div class="app">
 
-{% block content %}
-
-<!-- PROFIL -->
-<div class="profile-card">
-  <div class="profile-avatar">
-    {{ user_initial|default('A') }}
-    <div class="online-dot"></div>
-  </div>
-  <div class="profile-info">
-    <h3>Bon après-midi, <span>{{ user_short|default('abdo...') }}</span></h3>
-    {% if is_subscribed %}
-      <div class="badge-abonne">Abonné</div>
-    {% endif %}
-    <p>{{ user_name|default('abdoula') }} · {{ followers_count|default(0) }} filleuls</p>
-  </div>
-  <div class="profile-actions">
-    <button class="icon-btn" onclick="copyReferralLink(this)" data-link="{{ base_url|default('') }}/register?ref=USER_CODE" title="Lien d'invitation">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="avatar-top">{{ user_initial }}</div>
+    <div class="logo">Tri<span>Boost</span></div>
+    <button class="menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
       </svg>
     </button>
-    <div style="color: var(--text-muted); font-size: 18px;">›</div>
+  </header>
+
+  <!-- PROFIL -->
+  <div class="profile-card">
+    <div class="profile-avatar">
+      {{ user_initial }}
+      <div class="online-dot"></div>
+    </div>
+    <div class="profile-info">
+      <h3>Bon après-midi, <span>{{ user_short }}</span></h3>
+      {% if is_subscribed %}<div class="badge-abonne">Abonné</div>{% endif %}
+      <p>{{ user_name }} · {{ followers_count }} filleuls</p>
+    </div>
   </div>
+
+  <!-- SOLDE -->
+  <div class="balance-card">
+    <div class="balance-label">
+      VOS SOLDES DISPONIBLES
+      <div class="arrow-circle">›</div>
+    </div>
+    <div class="balance-amount">{{ balance_fcfa }} <span>FCFA</span></div>
+    <div class="balance-sub">Principal {{ principal_fcfa }} F · Crypto {{ crypto_usd }}$</div>
+    <div class="balance-buttons">
+      <button class="btn-white">Retirer</button>
+      <button class="btn-gold">Historique</button>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="section-title">Nos services</div>
+  <div class="services-grid">
+    <a href="#" class="service-card">
+      <div class="service-icon icon-green">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="service-title">Formations</div>
+        <div class="service-desc">9 formations</div>
+      </div>
+    </a>
+    <a href="#" class="service-card">
+      <div class="service-icon icon-orange">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="service-title">TriBoost Shop</div>
+        <div class="service-desc">Boutiques & produits</div>
+      </div>
+    </a>
+    <a href="#" class="service-card">
+      <div class="service-icon icon-gold">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="service-title">Mon Réseau</div>
+        <div class="service-desc">3 niveaux</div>
+      </div>
+    </a>
+    <a href="#" class="service-card">
+      <div class="service-icon icon-red">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+      </div>
+      <div>
+        <div class="service-title">Commissions</div>
+        <div class="service-desc">Vos gains</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="/dashboard" class="nav-item active">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </div>
+      Accueil
+    </a>
+    <a href="#" class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      </div>
+      Shop
+    </a>
+    <a href="#" class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      Réseau
+    </a>
+    <a href="#" class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+      </div>
+      Paiements
+    </a>
+    <a href="#" class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+      Chat
+    </a>
+  </nav>
+
 </div>
-
-<!-- SOLDE -->
-<div class="balance-card">
-  <div class="balance-label">
-    VOS SOLDES DISPONIBLES
-    <div class="arrow-circle">›</div>
-  </div>
-  <div class="balance-amount">
-    {{ "{:,.0f}".format(balance_fcfa)|replace(",", " ") }} <span>FCFA</span>
-  </div>
-  <div class="balance-sub">
-    Principal {{ principal_fcfa }} F · Crypto {{ crypto_usd }}$ 
-  </div>
-  <div class="balance-buttons">
-    <button class="btn-white" onclick="openWithdrawModal()">
-      Retirer
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="18 15 12 9 6 15"></polyline>
-      </svg>
-    </button>
-    <button class="btn-gold" onclick="location.href='/payments'">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-      </svg>
-      Historique
-    </button>
-  </div>
-</div>
-
-<!-- SERVICES -->
-<div class="section-title">Nos services</div>
-<div class="services-grid">
-
-  <a href="/formations" class="service-card">
-    <div class="service-icon icon-green">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-      </svg>
-    </div>
-    <div>
-      <div class="service-title">Formations</div>
-      <div class="service-desc">9 formations</div>
-    </div>
-  </a>
-
-  <a href="/shop" class="service-card">
-    <div class="service-icon icon-orange">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="9" cy="21" r="1"></circle>
-        <circle cx="20" cy="21" r="1"></circle>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-      </svg>
-    </div>
-    <div>
-      <div class="service-title">TriBoost Shop</div>
-      <div class="service-desc">Boutiques & produits</div>
-    </div>
-  </a>
-
-  <a href="/network" class="service-card">
-    <div class="service-icon icon-gold">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9" cy="7" r="4"></circle>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-      </svg>
-    </div>
-    <div>
-      <div class="service-title">Mon Réseau</div>
-      <div class="service-desc">3 niveaux d'affiliation</div>
-    </div>
-  </a>
-
-  <a href="/commissions" class="service-card">
-    <div class="service-icon icon-red">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-        <polyline points="17 6 23 6 23 12"></polyline>
-      </svg>
-    </div>
-    <div>
-      <div class="service-title">Commissions</div>
-      <div class="service-desc">Suivi de vos gains</div>
-    </div>
-  </a>
-
-</div>
-
-<!-- MODAL RETRAIT -->
-<div id="withdrawModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center;">
-  <div class="card" style="width:90%; max-width:360px; padding:24px;">
-    <h3 style="margin-bottom:12px;">Demander un retrait</h3>
-    <p class="muted" style="font-size:13px; margin-bottom:16px;">Minimum : 10 000 FCFA · Délai : 24-72h</p>
-    <input type="number" id="withdrawAmount" placeholder="Montant en FCFA" 
-           style="width:100%; padding:12px; border:1px solid var(--border); border-radius:12px; margin-bottom:12px; font-size:14px;">
-    <select id="withdrawMethod" 
-            style="width:100%; padding:12px; border:1px solid var(--border); border-radius:12px; margin-bottom:16px; font-size:14px; background:#fff;">
-      <option value="mtn">MTN Mobile Money</option>
-      <option value="orange">Orange Money</option>
-      <option value="bank">Virement bancaire</option>
-    </select>
-    <div style="display:flex; gap:10px;">
-      <button class="btn btn-white" style="flex:1;" onclick="closeWithdrawModal()">Annuler</button>
-      <button class="btn btn-gold" style="flex:1;" onclick="submitWithdraw()">Confirmer</button>
-    </div>
-  </div>
-</div>
-
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  function openWithdrawModal() {
-    const m = document.getElementById('withdrawModal');
-    m.style.display = 'flex';
-  }
-  function closeWithdrawModal() {
-    document.getElementById('withdrawModal').style.display = 'none';
-  }
-  async function submitWithdraw() {
-    const amount = parseFloat(document.getElementById('withdrawAmount').value);
-    const method = document.getElementById('withdrawMethod').value;
-    if (!amount || amount < 10000) {
-      toast('Le montant minimum est de 10 000 FCFA', 'error');
-      return;
-    }
-    try {
-      // await apiCall('/withdrawals', { method: 'POST', body: JSON.stringify({ amount, method }) });
-      toast('Demande de retrait envoyée !', 'success');
-      closeWithdrawModal();
-    } catch (e) {
-      toast('Erreur : ' + e.message, 'error');
-    }
-  }
-</script>
-{% endblock %}
+</body>
+</html>
