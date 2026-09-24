@@ -54,9 +54,11 @@ HTML_LOGIN = (
   const form = document.getElementById('loginForm');
   const btn = document.getElementById('loginBtn');
 
+  // Focus auto sur l'email au chargement
   setTimeout(() => document.getElementById('email').focus(), 300);
 
-  if (localStorage.getItem('access_token')) {
+  // Si déjà connecté → redirection directe
+  if (localStorage.getItem('access_token') && localStorage.getItem('user_id')) {
     window.location.href = '/dashboard';
   }
 
@@ -87,10 +89,18 @@ HTML_LOGIN = (
 
       if (!res.ok) throw new Error(data.detail || 'Identifiants invalides');
 
+      // ===== STOCKAGE DES INFOS DE SESSION =====
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('refresh_token', data.refresh_token);
+      localStorage.setItem('user_id', data.user.id);
       localStorage.setItem('user_email', data.user.email);
-      if (data.user.full_name) localStorage.setItem('user_name', data.user.full_name);
+
+      if (data.user.full_name) {
+        localStorage.setItem('user_name', data.user.full_name);
+      }
+      if (data.user.referral_code) {
+        localStorage.setItem('user_referral_code', data.user.referral_code);
+      }
 
       vibrate(20);
       showSuccess('Connexion réussie ! Redirection...');
