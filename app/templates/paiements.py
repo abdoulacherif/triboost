@@ -172,7 +172,6 @@ HTML_PAIEMENTS = (
 
   <div style="height: 32px;"></div>
 </div>
-
 """
     + JS_COMMUN
     + """
@@ -257,7 +256,6 @@ HTML_PAIEMENTS = (
       alert('✅ Demande envoyée ! Traitement 24-72h');
       document.getElementById('withdrawForm').reset();
       document.getElementById('wOperator').disabled = true;
-      document.getElementById('wOperator').innerHTML = '<option value="">-- Choisir un pays d\\'abord --</option>';
       loadProfile();
     } catch (err) {
       errEl.textContent = '⚠ ' + err.message; errEl.style.display = 'block';
