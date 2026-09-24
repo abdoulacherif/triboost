@@ -11,6 +11,7 @@ class Settings:
     # ===== Supabase =====
     SUPABASE_URL: str = os.environ.get("SUPABASE_URL", "")
     SUPABASE_ANON_KEY: str = os.environ.get("SUPABASE_ANON_KEY", "")
+    SUPABASE_SERVICE_ROLE_KEY: str = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 
     # ===== LeekPay =====
     LEEKPAY_PUBLIC_KEY: str = os.environ.get("LEEKPAY_PUBLIC_KEY", "")
@@ -24,6 +25,11 @@ class Settings:
     def is_configured(self) -> bool:
         """Supabase est-il configuré ?"""
         return bool(self.SUPABASE_URL and self.SUPABASE_ANON_KEY)
+
+    @property
+    def is_admin_configured(self) -> bool:
+        """Supabase service_role est-elle configurée ?"""
+        return bool(self.SUPABASE_URL and self.SUPABASE_SERVICE_ROLE_KEY)
 
     @property
     def is_leekpay_configured(self) -> bool:
