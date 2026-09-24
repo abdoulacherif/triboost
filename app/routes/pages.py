@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from app.templates.dashboard import HTML_DASHBOARD
 from app.templates.login import HTML_LOGIN
 from app.templates.register import HTML_REGISTER
+from app.templates.activation import HTML_ACTIVATION
 
 router = APIRouter()
 
@@ -26,6 +27,11 @@ async def register_page():
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_page():
     return HTML_DASHBOARD
+
+
+@router.get("/activation", response_class=HTMLResponse)
+async def activation_page():
+    return HTML_ACTIVATION
 
 
 @router.get("/health")
