@@ -1,42 +1,52 @@
-from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
-from app.api.router import api_router
-from app.api.v1 import pages  # routes HTML
-from app.core.config import settings
-from app.core.database import engine
+BASE_DIR = Path(__file__).resolve().parent
 
+app = FastAPI(title="TriBoost", version="1.0.0")
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    yield
-    await engine.dispose()
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
-app = FastAPI(
-    title=settings.APP_NAME,
-    version="1.0.0",
-    docs_url="/docs" if settings.DEBUG else None,
-    lifespan=lifespan,
-)
+# ===== ROUTES =====
+# Voici les routes publiques — c'est ÇA qui manquait
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
-# API JSON
-app.include_router(api_router, prefix="/api/v1")
 
-# Pages HTML (avec CSS/JS inline)
-app.include_router(pages.router, tags=["Pages"])
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard_page(request: Request):
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {
+            "request": request,
+            "user_initial": "A",
+            "user_short": "abdo...",
+            "user_name": "abdoula",
+            "followers_count": 147,
+            "is_subscribed": True,
+            "balance_fcfa": 1048,
+            "principal_fcfa": 1048,
+            "crypto_usd": "0.00",
+        },
+    )
 
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "app": "TriBoost"}
