@@ -26,6 +26,7 @@ from app.templates.register import HTML_REGISTER
 
 router = APIRouter()
 
+
 # ============================================================
 # AUTH
 # ============================================================
@@ -83,7 +84,7 @@ async def commissions_page():
 
 
 # ============================================================
-# BOUTIQUE (⚠️ UNE SEULE FOIS)
+# BOUTIQUE — NE PAS DOUBLONNER AILLEURS
 # ============================================================
 @router.get("/boutique", response_class=HTMLResponse)
 async def boutique_page():
@@ -96,7 +97,8 @@ async def formation_detail_page(formation_id: str):
 
 
 # ============================================================
-# PLACEHOLDERS (uniquement pages pas encore faites)
+# PLACEHOLDERS (pages pas encore finies)
+# ⚠️ NE JAMAIS METTRE /boutique ICI
 # ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
