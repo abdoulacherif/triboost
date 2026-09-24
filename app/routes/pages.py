@@ -4,15 +4,16 @@ from fastapi.responses import HTMLResponse
 from app.templates.activation import HTML_ACTIVATION
 from app.templates.activation_success import HTML_ACTIVATION_SUCCESS
 from app.templates.affilie import HTML_AFFILIE
+from app.templates.boutique import HTML_BOUTIQUE
 from app.templates.commissions import HTML_COMMISSIONS
 from app.templates.dashboard import HTML_DASHBOARD
+from app.templates.formation_detail import HTML_FORMATION_DETAIL
 from app.templates.historique import HTML_HISTORIQUE
 from app.templates.login import HTML_LOGIN
 from app.templates.marche import HTML_MARCHE
 from app.templates.placeholder import (
     ICON_AFFAIRE,
     ICON_BOOST,
-    ICON_BOUTIQUE,
     ICON_CHAT,
     ICON_FORMATION,
     ICON_PAIEMENTS,
@@ -82,97 +83,57 @@ async def commissions_page():
     return HTML_COMMISSIONS
 
 
+@router.get("/boutique", response_class=HTMLResponse)
+async def boutique_page():
+    return HTML_BOUTIQUE
+
+
+@router.get("/boutique/{formation_id}", response_class=HTMLResponse)
+async def formation_detail_page(formation_id: str):
+    return HTML_FORMATION_DETAIL
+
+
 # ============================================================
 # PLACEHOLDERS
 # ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
-    return make_placeholder(
-        "Affaire",
-        ICON_AFFAIRE,
-        "Découvrez les opportunités business et les partenariats TriBoost.",
-        "green",
-    )
+    return make_placeholder("Affaire", ICON_AFFAIRE, "Découvrez les opportunités business.", "green")
 
 
 @router.get("/tache", response_class=HTMLResponse)
 async def tache_page():
-    return make_placeholder(
-        "Tâche",
-        ICON_TACHE,
-        "Accomplissez des missions simples et gagnez des bonus.",
-        "blue",
-    )
+    return make_placeholder("Tâche", ICON_TACHE, "Accomplissez des missions.", "blue")
 
 
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
-    return make_placeholder(
-        "Tourner",
-        ICON_TOURNER,
-        "Faites tourner la roue et tentez de gagner des récompenses.",
-        "purple",
-    )
+    return make_placeholder("Tourner", ICON_TOURNER, "Faites tourner la roue.", "purple")
 
 
 @router.get("/formation", response_class=HTMLResponse)
 async def formation_page():
-    return make_placeholder(
-        "Formation",
-        ICON_FORMATION,
-        "Apprenez les stratégies gagnantes pour développer votre réseau.",
-        "orange",
-    )
+    return make_placeholder("Formation", ICON_FORMATION, "Formations TriBoost.", "orange")
 
 
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_page():
-    return make_placeholder(
-        "Shop",
-        ICON_SHOP,
-        "Découvrez tous les produits et services TriBoost.",
-        "teal",
-    )
+    return make_placeholder("Shop", ICON_SHOP, "Produits & services TriBoost.", "teal")
 
 
 @router.get("/boost", response_class=HTMLResponse)
 async def boost_page():
-    return make_placeholder(
-        "Boost",
-        ICON_BOOST,
-        "Boostez vos gains et accélérez votre progression.",
-        "gold",
-    )
-
-
-@router.get("/boutique", response_class=HTMLResponse)
-async def boutique_page():
-    return make_placeholder(
-        "Boutique",
-        ICON_BOUTIQUE,
-        "Achetez et vendez vos produits dans la boutique TriBoost.",
-        "orange",
-    )
+    return make_placeholder("Boost", ICON_BOOST, "Boostez vos gains.", "gold")
 
 
 @router.get("/paiements", response_class=HTMLResponse)
 async def paiements_page():
-    return make_placeholder(
-        "Paiements",
-        ICON_PAIEMENTS,
-        "Gérez vos retraits Mobile Money et vos historiques de paiement.",
-        "green",
-    )
+    return make_placeholder("Paiements", ICON_PAIEMENTS, "Retraits Mobile Money.", "green")
 
 
 @router.get("/chat", response_class=HTMLResponse)
 async def chat_page():
-    return make_placeholder(
-        "Chat",
-        ICON_CHAT,
-        "Discutez avec votre équipe et votre réseau.",
-        "blue",
-    )
+    return make_placeholder("Chat", ICON_CHAT, "Discutez avec votre équipe.", "blue")
 
 
 # ============================================================
