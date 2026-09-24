@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from app.templates.activation import HTML_ACTIVATION
 from app.templates.activation_success import HTML_ACTIVATION_SUCCESS
 from app.templates.affilie import HTML_AFFILIE
+from app.templates.commissions import HTML_COMMISSIONS
 from app.templates.dashboard import HTML_DASHBOARD
 from app.templates.historique import HTML_HISTORIQUE
 from app.templates.login import HTML_LOGIN
@@ -13,7 +14,6 @@ from app.templates.placeholder import (
     ICON_BOOST,
     ICON_BOUTIQUE,
     ICON_CHAT,
-    ICON_COMMISSIONS,
     ICON_FORMATION,
     ICON_PAIEMENTS,
     ICON_SHOP,
@@ -79,11 +79,11 @@ async def historique_page():
 
 @router.get("/commissions", response_class=HTMLResponse)
 async def commissions_page():
-    return HTML_HISTORIQUE
+    return HTML_COMMISSIONS
 
 
 # ============================================================
-# PLACEHOLDERS (menu burger + services)
+# PLACEHOLDERS
 # ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
