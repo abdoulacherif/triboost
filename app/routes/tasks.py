@@ -14,7 +14,6 @@ async def list_tasks(request: Request):
     try:
         admin = get_supabase_admin()
 
-        # Récupérer les tâches
         result = (
             admin.table("tasks")
             .select("*")
@@ -25,7 +24,6 @@ async def list_tasks(request: Request):
         )
         tasks = result.data or []
 
-        # Si connecté, récupérer les soumissions de l'utilisateur
         user_submissions = {}
         auth_header = request.headers.get("Authorization", "")
         if auth_header.startswith("Bearer "):
@@ -45,7 +43,6 @@ async def list_tasks(request: Request):
             except Exception:
                 pass
 
-        # Fusionner
         for t in tasks:
             sub = user_submissions.get(t["id"])
             t["user_status"] = sub["status"] if sub else None
@@ -90,7 +87,6 @@ async def submit_task(task_id: str, request: Request):
 
         admin = get_supabase_admin()
 
-        # Vérifier que la tâche existe
         task_result = (
             admin.table("tasks")
             .select("id, reward, is_active, max_completions, completed_count")
@@ -104,11 +100,9 @@ async def submit_task(task_id: str, request: Request):
 
         task = task_result.data[0]
 
-        # Vérifier le quota
         if task["max_completions"] > 0 and task["completed_count"] >= task["max_completions"]:
             raise HTTPException(status_code=400, detail="Cette tâche est complète")
 
-        # Vérifier si déjà soumis
         existing = (
             admin.table("task_submissions")
             .select("id, status")
@@ -123,9 +117,7 @@ async def submit_task(task_id: str, request: Request):
                 raise HTTPException(status_code=400, detail="Tu as déjà une soumission en attente")
             if status == "approved":
                 raise HTTPException(status_code=400, detail="Tu as déjà validé cette tâche")
-            # Si "rejected", on permet de resoumettre (update)
 
-        # Insérer ou mettre à jour
         if existing.data and len(existing.data) > 0:
             admin.table("task_submissions").update({
                 "network": network,
