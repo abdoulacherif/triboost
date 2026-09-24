@@ -1,13 +1,25 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+import os
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from supabase import create_client, Client
 
 app = FastAPI(title="TriBoost")
 
+# ============================================================
+# SUPABASE
+# ============================================================
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+
+def get_supabase() -> Client:
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        raise HTTPException(status_code=500, detail="Supabase non configuré")
+    return create_client(SUPABASE_URL, SUPABASE_KEY)
+
 
 # ============================================================
-# HTML EN DUR (pas de fichiers templates → pas de 404)
+# CSS COMMUN
 # ============================================================
-
 CSS_COMMUN = """
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,15 +59,34 @@ CSS_COMMUN = """
     font-weight: 700; font-size: 15px; cursor: pointer;
     margin-top: 8px;
   }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
   .footer {
     text-align: center; margin-top: 24px;
     font-size: 14px; color: #757575;
   }
   .footer a { color: #2e7d32; font-weight: 600; text-decoration: none; }
+  .error {
+    background: #ffebee; color: #d32f2f;
+    padding: 12px; border-radius: 10px;
+    font-size: 13px; margin-bottom: 16px; display: none;
+  }
+  .success {
+    background: #e8f5e9; color: #2e7d32;
+    padding: 12px; border-radius: 10px;
+    font-size: 13px; margin-bottom: 16px; display: none;
+  }
+  .referral-info {
+    background: #e8f5e9; color: #2e7d32;
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 13px; margin-bottom: 16px; text-align: center;
+  }
 </style>
 """
 
 
+# ============================================================
+# HTML LOGIN
+# ============================================================
 HTML_LOGIN = """<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -68,26 +99,81 @@ HTML_LOGIN = """<!DOCTYPE html>
 <div class="wrap">
   <div class="logo">Tri<span>Boost</span></div>
   <div class="subtitle">Connectez-vous à votre compte</div>
-  <form onsubmit="event.preventDefault(); window.location.href='/dashboard';">
+
+  <div id="errorMsg" class="error"></div>
+  <div id="successMsg" class="success"></div>
+
+  <form id="loginForm">
     <div class="form-group">
       <label>Email</label>
-      <input type="email" required placeholder="vous@exemple.com">
+      <input type="email" id="email" required placeholder="vous@exemple.com">
     </div>
     <div class="form-group">
       <label>Mot de passe</label>
-      <input type="password" required placeholder="••••••••">
+      <input type="password" id="password" required placeholder="••••••••">
     </div>
-    <button type="submit" class="btn-primary">Se connecter</button>
+    <button type="submit" class="btn-primary" id="loginBtn">Se connecter</button>
   </form>
+
   <div class="footer">
     Pas de compte ? <a href="/register">Inscrivez-vous</a>
   </div>
 </div>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const btn = document.getElementById('loginBtn');
+  const errorMsg = document.getElementById('errorMsg');
+  const successMsg = document.getElementById('successMsg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Connexion...';
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || 'Identifiants invalides');
+      }
+
+      // Stocker le token
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
+      localStorage.setItem('user_email', data.user.email);
+
+      successMsg.textContent = 'Connexion réussie ! Redirection...';
+      successMsg.style.display = 'block';
+
+      setTimeout(() => window.location.href = '/dashboard', 800);
+
+    } catch (err) {
+      errorMsg.textContent = err.message;
+      errorMsg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Se connecter';
+    }
+  });
+</script>
 </body>
 </html>
 """
 
 
+# ============================================================
+# HTML REGISTER
+# ============================================================
 HTML_REGISTER = """<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -95,47 +181,97 @@ HTML_REGISTER = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inscription — TriBoost</title>
 """ + CSS_COMMUN + """
-<style>
-  .referral-info {
-    background: #e8f5e9; color: #2e7d32;
-    padding: 10px 14px; border-radius: 10px;
-    font-size: 13px; margin-bottom: 16px; text-align: center;
-  }
-</style>
 </head>
 <body>
 <div class="wrap">
   <div class="logo">Tri<span>Boost</span></div>
   <div class="subtitle">Créez votre compte gratuit</div>
+
   <div class="referral-info">🎁 Inscription via un lien de parrainage</div>
-  <form onsubmit="event.preventDefault(); alert('Compte créé (démo)'); window.location.href='/login';">
+
+  <div id="errorMsg" class="error"></div>
+  <div id="successMsg" class="success"></div>
+
+  <form id="registerForm">
     <div class="form-group">
       <label>Nom complet</label>
-      <input type="text" required placeholder="Ex : Abdoula Diallo">
+      <input type="text" id="fullName" required placeholder="Ex : Abdoula Diallo">
     </div>
     <div class="form-group">
       <label>Email</label>
-      <input type="email" required placeholder="vous@exemple.com">
+      <input type="email" id="email" required placeholder="vous@exemple.com">
     </div>
     <div class="form-group">
       <label>Numéro Mobile Money</label>
-      <input type="tel" required placeholder="+237 6XX XXX XXX">
+      <input type="tel" id="phone" required placeholder="+237 6XX XXX XXX">
     </div>
     <div class="form-group">
-      <label>Mot de passe (min. 10 caractères)</label>
-      <input type="password" minlength="10" required>
+      <label>Mot de passe (min. 6 caractères)</label>
+      <input type="password" id="password" minlength="6" required placeholder="••••••••">
     </div>
-    <button type="submit" class="btn-primary">Créer mon compte</button>
+    <button type="submit" class="btn-primary" id="registerBtn">Créer mon compte</button>
   </form>
+
   <div class="footer">
     Déjà inscrit ? <a href="/login">Se connecter</a>
   </div>
 </div>
+
+<script>
+  const form = document.getElementById('registerForm');
+  const btn = document.getElementById('registerBtn');
+  const errorMsg = document.getElementById('errorMsg');
+  const successMsg = document.getElementById('successMsg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Création...';
+
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const password = document.getElementById('password').value;
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email, password,
+          full_name: fullName,
+          phone: phone
+        })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || 'Erreur lors de l\\'inscription');
+      }
+
+      successMsg.textContent = 'Compte créé ! Vérifiez votre email pour confirmer.';
+      successMsg.style.display = 'block';
+
+      setTimeout(() => window.location.href = '/login', 2000);
+
+    } catch (err) {
+      errorMsg.textContent = err.message;
+      errorMsg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Créer mon compte';
+    }
+  });
+</script>
 </body>
 </html>
 """
 
 
+# ============================================================
+# HTML DASHBOARD (protégé)
+# ============================================================
 HTML_DASHBOARD = """<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -144,15 +280,10 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 <title>Accueil — TriBoost</title>
 <style>
   :root {
-    --green: #2e7d32;
-    --green-dark: #1b5e20;
-    --green-light: #e8f5e9;
-    --gold: #fbc02d;
-    --gold-light: #fff8e1;
-    --orange: #f57c00;
-    --orange-light: #fff3e0;
-    --red: #d32f2f;
-    --red-light: #ffebee;
+    --green: #2e7d32; --green-dark: #1b5e20; --green-light: #e8f5e9;
+    --gold: #fbc02d; --gold-light: #fff8e1;
+    --orange: #f57c00; --orange-light: #fff3e0;
+    --red: #d32f2f; --red-light: #ffebee;
     --border: #eeeeee;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -184,6 +315,11 @@ HTML_DASHBOARD = """<!DOCTYPE html>
     background: var(--green-light); color: var(--green);
     display: flex; align-items: center; justify-content: center;
     border: none; cursor: pointer;
+  }
+  .logout-btn {
+    background: var(--red-light); color: var(--red);
+    border: none; padding: 8px 14px; border-radius: 10px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
   }
   .profile-card {
     margin: 0 20px 20px; padding: 16px;
@@ -296,26 +432,20 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 <body>
 <div class="app">
   <header class="topbar">
-    <div class="avatar-top">A</div>
+    <div class="avatar-top" id="userInitial">A</div>
     <div class="logo">Tri<span>Boost</span></div>
-    <button class="menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    </button>
+    <button class="logout-btn" onclick="logout()">Déconnexion</button>
   </header>
 
   <div class="profile-card">
     <div class="profile-avatar">
-      A
+      <span id="userInitial2">A</span>
       <div class="online-dot"></div>
     </div>
     <div class="profile-info">
-      <h3>Bon après-midi, <span>abdo...</span></h3>
-      <div class="badge-abonne">Abonné</div>
-      <p>abdoula · 147 filleuls</p>
+      <h3>Bonjour, <span id="userEmail">...</span></h3>
+      <div class="badge-abonne">Compte actif</div>
+      <p id="userInfo">TriBoost · Membre</p>
     </div>
   </div>
 
@@ -436,44 +566,177 @@ HTML_DASHBOARD = """<!DOCTYPE html>
     </a>
   </nav>
 </div>
+
+<script>
+  // Vérifier que l'utilisateur est connecté
+  const token = localStorage.getItem('access_token');
+  const email = localStorage.getItem('user_email');
+  if (!token) {
+    window.location.href = '/login';
+  }
+  if (email) {
+    document.getElementById('userEmail').textContent = email.split('@')[0];
+    const initial = email.charAt(0).toUpperCase();
+    document.getElementById('userInitial').textContent = initial;
+    document.getElementById('userInitial2').textContent = initial;
+    document.getElementById('userInfo').textContent = email + ' · Membre';
+  }
+
+  function logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_email');
+    window.location.href = '/login';
+  }
+</script>
 </body>
 </html>
 """
 
 
 # ============================================================
-# ROUTES
+# ROUTES PAGES
 # ============================================================
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
     return HTML_LOGIN
 
-
 @app.get("/login", response_class=HTMLResponse)
-async def login():
+async def login_page():
     return HTML_LOGIN
 
-
 @app.get("/register", response_class=HTMLResponse)
-async def register():
+async def register_page():
     return HTML_REGISTER
 
-
 @app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard():
+async def dashboard_page():
     return HTML_DASHBOARD
-
 
 @app.get("/health")
 async def health():
     return {"status": "ok", "app": "TriBoost"}
 
 
-@app.get("/api/test")
-async def test_api():
-    return {"message": "API TriBoost fonctionne", "routes": ["/", "/login", "/register", "/dashboard", "/health"]}
+# ============================================================
+# API AUTH — SUPABASE
+# ============================================================
+
+@app.post("/api/auth/register")
+async def api_register(request: Request):
+    """Créer un compte via Supabase Auth."""
+    try:
+        body = await request.json()
+        email = body.get("email")
+        password = body.get("password")
+        full_name = body.get("full_name", "")
+        phone = body.get("phone", "")
+
+        if not email or not password:
+            raise HTTPException(status_code=400, detail="Email et mot de passe requis")
+
+        supabase = get_supabase()
+
+        # Créer l'utilisateur dans Supabase Auth
+        response = supabase.auth.sign_up({
+            "email": email,
+            "password": password,
+            "options": {
+                "data": {
+                    "full_name": full_name,
+                    "phone": phone,
+                }
+            }
+        })
+
+        if response.user is None:
+            raise HTTPException(status_code=400, detail="Erreur lors de la création du compte")
+
+        return {
+            "success": True,
+            "message": "Compte créé. Vérifiez votre email.",
+            "user": {
+                "id": response.user.id,
+                "email": response.user.email,
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
-# Handler pour Vercel
+@app.post("/api/auth/login")
+async def api_login(request: Request):
+    """Connexion via Supabase Auth."""
+    try:
+        body = await request.json()
+        email = body.get("email")
+        password = body.get("password")
+
+        if not email or not password:
+            raise HTTPException(status_code=400, detail="Email et mot de passe requis")
+
+        supabase = get_supabase()
+
+        response = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+
+        if response.session is None:
+            raise HTTPException(status_code=401, detail="Identifiants invalides")
+
+        return {
+            "success": True,
+            "access_token": response.session.access_token,
+            "refresh_token": response.session.refresh_token,
+            "expires_in": response.session.expires_in,
+            "user": {
+                "id": response.user.id,
+                "email": response.user.email,
+                "full_name": response.user.user_metadata.get("full_name", ""),
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+
+
+@app.post("/api/auth/logout")
+async def api_logout(request: Request):
+    """Déconnexion."""
+    try:
+        supabase = get_supabase()
+        supabase.auth.sign_out()
+        return {"success": True}
+    except Exception as e:
+        return {"success": True}  # On ignore les erreurs de logout
+
+
+@app.get("/api/auth/me")
+async def api_me(request: Request):
+    """Vérifier la session utilisateur."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+
+    token = auth_header.replace("Bearer ", "")
+    try:
+        supabase = get_supabase()
+        user = supabase.auth.get_user(token)
+        return {
+            "user": {
+                "id": user.user.id,
+                "email": user.user.email,
+            }
+        }
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token invalide")
+
+
 handler = app
