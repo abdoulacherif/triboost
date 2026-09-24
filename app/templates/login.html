@@ -1,89 +1,100 @@
-{% extends "base.html" %}
-
-{% block title %}Connexion — TriBoost{% endblock %}
-
-{% block topbar %}{% endblock %}
-{% block bottomnav %}{% endblock %}
-
-{% block extra_head %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion — TriBoost</title>
 <style>
-  .auth-wrap {
-    min-height: 100vh; padding: 40px 24px;
+  :root {
+    --green: #2e7d32;
+    --green-dark: #1b5e20;
+    --gold: #fbc02d;
+    --text-dark: #212121;
+    --text-muted: #757575;
+    --border: #eeeeee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: #fcfcfc;
+    color: var(--text-dark);
+    display: flex; justify-content: center;
+    min-height: 100vh;
+  }
+  .wrap {
+    width: 100%; max-width: 420px;
+    padding: 40px 24px;
     display: flex; flex-direction: column; justify-content: center;
+    min-height: 100vh;
   }
-  .auth-logo {
-    text-align: center; font-size: 32px; font-weight: 800;
-    color: var(--green); margin-bottom: 8px;
+  .logo {
+    text-align: center; font-size: 32px;
+    font-weight: 800; color: var(--green);
+    margin-bottom: 8px;
   }
-  .auth-logo span { color: var(--gold); }
-  .auth-subtitle {
+  .logo span { color: var(--gold); }
+  .subtitle {
     text-align: center; color: var(--text-muted);
     font-size: 14px; margin-bottom: 32px;
   }
   .form-group { margin-bottom: 16px; }
   .form-group label {
-    display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;
+    display: block; font-size: 13px; font-weight: 600;
+    margin-bottom: 6px;
   }
   .form-group input {
-    width: 100%; padding: 14px; border: 1px solid var(--border);
-    border-radius: 12px; font-size: 14px; outline: none;
-    transition: border 0.2s;
+    width: 100%; padding: 14px;
+    border: 1px solid var(--border); border-radius: 12px;
+    font-size: 14px; outline: none; transition: 0.2s;
   }
   .form-group input:focus { border-color: var(--green); }
   .btn-primary {
     width: 100%; padding: 14px; background: var(--green);
-    color: #fff; border-radius: 12px; font-weight: 700;
-    font-size: 15px; border: none; cursor: pointer; margin-top: 8px;
+    color: #fff; border: none; border-radius: 12px;
+    font-weight: 700; font-size: 15px;
+    cursor: pointer; margin-top: 8px;
+    transition: 0.2s;
   }
-  .auth-footer {
-    text-align: center; margin-top: 24px; font-size: 14px;
-    color: var(--text-muted);
+  .btn-primary:hover { background: var(--green-dark); }
+  .footer {
+    text-align: center; margin-top: 24px;
+    font-size: 14px; color: var(--text-muted);
   }
-  .auth-footer a { color: var(--green); font-weight: 600; text-decoration: none; }
+  .footer a {
+    color: var(--green); font-weight: 600;
+    text-decoration: none;
+  }
 </style>
-{% endblock %}
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">Tri<span>Boost</span></div>
+  <div class="subtitle">Connectez-vous à votre compte</div>
 
-{% block content %}
-<div class="auth-wrap">
-  <div class="auth-logo">Tri<span>Boost</span></div>
-  <div class="auth-subtitle">Connectez-vous à votre compte</div>
-
-  <form id="loginForm" onsubmit="handleLogin(event)">
+  <form onsubmit="handleLogin(event)">
     <div class="form-group">
-      <label for="email">Email</label>
+      <label>Email</label>
       <input type="email" id="email" required placeholder="vous@exemple.com">
     </div>
     <div class="form-group">
-      <label for="password">Mot de passe</label>
+      <label>Mot de passe</label>
       <input type="password" id="password" required placeholder="••••••••">
     </div>
     <button type="submit" class="btn-primary">Se connecter</button>
   </form>
 
-  <div class="auth-footer">
+  <div class="footer">
     Pas de compte ? <a href="/register">Inscrivez-vous</a>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-  async function handleLogin(e) {
+  function handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    try {
-      const data = await apiCall('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('refresh_token', data.refresh_token);
-      toast('Connexion réussie !', 'success');
-      setTimeout(() => location.href = '/dashboard', 600);
-    } catch (err) {
-      toast('Identifiants invalides', 'error');
-    }
+    // Étape 1 : on redirige simplement vers le dashboard
+    // L'API de login viendra à l'étape 3
+    window.location.href = '/dashboard';
   }
 </script>
-{% endblock %}
+</body>
+</html>
