@@ -19,3 +19,11 @@ class ReferralCheckResponse(BaseModel):
     valid: bool
     full_name: str | None = None
     country: str | None = None
+class MarketItemCreate(BaseModel):
+    title: str = Field(..., min_length=3, max_length=100)
+    description: str = ""
+    price: float = 0
+    category: str = "autre"
+    city: str = ""
+    whatsapp: str = Field(..., min_length=6)
+    image_base64: str | None = None  # format: "data:image/jpeg;base64,..."
