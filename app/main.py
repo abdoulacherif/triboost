@@ -1,6 +1,17 @@
 from fastapi import FastAPI
 
-from app.routes import auth, formations, history, marketplace, network, pages, payments, tasks
+from app.routes import (
+    affaires,
+    auth,
+    boost,
+    formations,
+    history,
+    marketplace,
+    network,
+    pages,
+    payments,
+    tasks,
+)
 
 app = FastAPI(title="TriBoost", version="1.0.0")
 
@@ -15,3 +26,5 @@ app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
 app.include_router(history.router, prefix="/api/history", tags=["History"])
 app.include_router(formations.router, prefix="/api/formations", tags=["Formations"])
 app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
+app.include_router(affaires.router, prefix="/api/affaires", tags=["Affaires"])
+app.include_router(boost.router, prefix="/api/boost", tags=["Boost"])
