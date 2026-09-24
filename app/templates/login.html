@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion — TriBoost{% endblock %}
+
+{% block topbar %}{% endblock %}
+{% block bottomnav %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-wrap {
+    min-height: 100vh; padding: 40px 24px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .auth-logo {
+    text-align: center; font-size: 32px; font-weight: 800;
+    color: var(--green); margin-bottom: 8px;
+  }
+  .auth-logo span { color: var(--gold); }
+  .auth-subtitle {
+    text-align: center; color: var(--text-muted);
+    font-size: 14px; margin-bottom: 32px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;
+  }
+  .form-group input {
+    width: 100%; padding: 14px; border: 1px solid var(--border);
+    border-radius: 12px; font-size: 14px; outline: none;
+    transition: border 0.2s;
+  }
+  .form-group input:focus { border-color: var(--green); }
+  .btn-primary {
+    width: 100%; padding: 14px; background: var(--green);
+    color: #fff; border-radius: 12px; font-weight: 700;
+    font-size: 15px; border: none; cursor: pointer; margin-top: 8px;
+  }
+  .auth-footer {
+    text-align: center; margin-top: 24px; font-size: 14px;
+    color: var(--text-muted);
+  }
+  .auth-footer a { color: var(--green); font-weight: 600; text-decoration: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-logo">Tri<span>Boost</span></div>
+  <div class="auth-subtitle">Connectez-vous à votre compte</div>
+
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" required placeholder="vous@exemple.com">
+    </div>
+    <div class="form-group">
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" required placeholder="••••••••">
+    </div>
+    <button type="submit" class="btn-primary">Se connecter</button>
+  </form>
+
+  <div class="auth-footer">
+    Pas de compte ? <a href="/register">Inscrivez-vous</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    try {
+      const data = await apiCall('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
+      toast('Connexion réussie !', 'success');
+      setTimeout(() => location.href = '/dashboard', 600);
+    } catch (err) {
+      toast('Identifiants invalides', 'error');
+    }
+  }
+</script>
+{% endblock %}
