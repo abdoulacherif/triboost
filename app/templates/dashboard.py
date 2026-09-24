@@ -19,6 +19,74 @@ HTML_DASHBOARD = (
     position: relative;
   }
 
+  /* ===== PANNEAU DEBUG ===== */
+  .debug-panel {
+    position: fixed;
+    bottom: 110px;
+    left: 10px;
+    right: 10px;
+    background: #1a1a1a;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    z-index: 99999;
+    max-height: 250px;
+    overflow-y: auto;
+    line-height: 1.5;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    display: none;
+  }
+  .debug-panel.show { display: block; }
+  .debug-panel .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #333;
+    color: #00ffaa;
+    font-weight: 700;
+  }
+  .debug-panel .close-btn {
+    background: #ff3333;
+    color: #fff;
+    border: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+  }
+  .debug-panel .line {
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+  .debug-panel .key { color: #ffff00; }
+  .debug-panel .val-true { color: #00ff00; font-weight: bold; }
+  .debug-panel .val-false { color: #ff6666; font-weight: bold; }
+  .debug-panel .val-null { color: #ff9900; font-weight: bold; }
+  .debug-toggle {
+    position: fixed;
+    bottom: 110px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    color: #00ff00;
+    border: 2px solid #00ff00;
+    cursor: pointer;
+    z-index: 99998;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   /* ===== TOPBAR ===== */
   .topbar {
     display: flex; justify-content: space-between; align-items: center;
@@ -403,6 +471,17 @@ HTML_DASHBOARD = (
 </head>
 <body>
 
+<!-- PANNEAU DEBUG -->
+<div class="debug-panel" id="debugPanel">
+  <div class="header">
+    <span>🔍 DEBUG PROFIL</span>
+    <button class="close-btn" onclick="toggleDebug()">×</button>
+  </div>
+  <div id="debugContent">Chargement...</div>
+</div>
+
+<button class="debug-toggle" onclick="toggleDebug()" title="Voir le débug">🐛</button>
+
 <!-- OVERLAY -->
 <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
 
@@ -740,7 +819,7 @@ HTML_DASHBOARD = (
 </div>
 
 <script>
-  // ===== RÉCUPÉRATION DES INFOS LOCALES =====
+  // ===== INFOS LOCALES =====
   const token = localStorage.getItem('access_token');
   const userId = localStorage.getItem('user_id');
   const email = localStorage.getItem('user_email');
@@ -765,35 +844,78 @@ HTML_DASHBOARD = (
     document.getElementById('drawerCode').textContent = referralCode;
   }
 
-  // ===== ÉTAT =====
   let isActivated = false;
-  let isLoadingProfile = false;
 
-  // ===== CHARGEMENT DU PROFIL =====
-  async function loadProfile(silent = false) {
-    if (isLoadingProfile) return;
-    isLoadingProfile = true;
+  // ===== DEBUG =====
+  function toggleDebug() {
+    document.getElementById('debugPanel').classList.toggle('show');
+  }
+  function debugLog(lines) {
+    const c = document.getElementById('debugContent');
+    c.innerHTML = lines;
+  }
+  function valClass(v) {
+    if (v === true || v === "true" || v === 1 || v === "1") return 'val-true';
+    if (v === false || v === "false" || v === 0 || v === "0") return 'val-false';
+    return 'val-null';
+  }
+  function dumpValue(v) {
+    if (v === null) return 'null';
+    if (v === undefined) return 'undefined';
+    if (typeof v === 'object') return JSON.stringify(v);
+    return String(v);
+  }
+
+  // ===== CHARGEMENT PROFIL =====
+  async function loadProfile() {
+    debugLog(`<div class="line">⏳ Chargement...</div>`);
 
     try {
-      const res = await fetch('/api/auth/profile/' + userId + '?t=' + Date.now(), {
+      const url = '/api/auth/profile/' + userId + '?t=' + Date.now();
+      const res = await fetch(url, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
 
       if (res.status === 401) {
+        debugLog(`<div class="line"><span class="key">⛔ Token invalide (401)</span></div>`);
         localStorage.clear();
         window.location.href = '/login';
         return;
       }
 
       if (!res.ok) {
-        if (!silent) showDefaultProfile();
+        const errText = await res.text();
+        debugLog(`
+          <div class="line"><span class="key">❌ HTTP</span> ${res.status}</div>
+          <div class="line"><span class="key">Erreur:</span> ${errText}</div>
+        `);
+        showDefaultProfile();
         return;
       }
 
       const data = await res.json();
-      const p = data.profile;
+      const p = data.profile || {};
 
-      // ⚠️ Gestion robuste de is_activated (bool, string, int)
+      // Log complet
+      debugLog(`
+        <div class="line"><span class="key">user_id:</span> ${userId}</div>
+        <div class="line"><span class="key">fallback:</span> <span class="${p.fallback ? 'val-false' : 'val-true'}">${p.fallback}</span></div>
+        <div class="line"><span class="key">is_activated (raw):</span> <span class="${valClass(p.is_activated)}">${dumpValue(p.is_activated)}</span></div>
+        <div class="line"><span class="key">type:</span> ${typeof p.is_activated}</div>
+        <div class="line"><span class="key">activated_at:</span> ${p.activated_at || 'null'}</div>
+        <div class="line"><span class="key">full_name:</span> ${p.full_name || 'null'}</div>
+        <div class="line"><span class="key">referral_code:</span> ${p.referral_code || 'null'}</div>
+        <div class="line"><span class="key">wallet_balance:</span> ${p.wallet_balance}</div>
+        <div class="line"><span class="key">total_earned:</span> ${p.total_earned}</div>
+        <div class="line" style="margin-top:6px; padding-top:6px; border-top:1px solid #333;">
+          <span class="key">Toutes les clés:</span>
+        </div>
+        <div class="line">${Object.keys(p).join(', ')}</div>
+      `);
+
+      console.log('[DASHBOARD] Profil complet:', p);
+
+      // Détection is_activated
       const raw = p.is_activated;
       isActivated = (
         raw === true ||
@@ -802,17 +924,13 @@ HTML_DASHBOARD = (
         raw === "1"
       );
 
-      console.log('[DASHBOARD] is_activated =', raw, '→ isActivated =', isActivated);
-
       // Solde
       const wb = document.getElementById('walletBalance');
       wb.classList.remove('skeleton');
       wb.textContent = Number(p.wallet_balance || 0).toLocaleString('fr-FR');
-
       document.getElementById('totalEarned').textContent =
         Number(p.total_earned || 0).toLocaleString('fr-FR');
 
-      // Code parrain
       if (p.referral_code) {
         localStorage.setItem('user_referral_code', p.referral_code);
         document.getElementById('drawerCode').textContent = p.referral_code;
@@ -821,10 +939,12 @@ HTML_DASHBOARD = (
       updateActivationUI(isActivated);
 
     } catch (err) {
-      console.error('Erreur profil:', err);
-      if (!silent) showDefaultProfile();
-    } finally {
-      isLoadingProfile = false;
+      console.error(err);
+      debugLog(`
+        <div class="line"><span class="key">💥 Erreur JS:</span></div>
+        <div class="line">${err.message}</div>
+      `);
+      showDefaultProfile();
     }
   }
 
@@ -852,7 +972,6 @@ HTML_DASHBOARD = (
     }
   }
 
-  // ===== REFRESH MANUEL =====
   function manualRefresh() {
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spinning');
@@ -862,7 +981,6 @@ HTML_DASHBOARD = (
     });
   }
 
-  // ===== ACTIONS (bloquées si non activé) =====
   function handleAction(action) {
     if (!isActivated) {
       showInactiveToast();
@@ -875,7 +993,6 @@ HTML_DASHBOARD = (
     }
   }
 
-  // ===== TOAST "COMPTE NON ACTIVÉ" =====
   function showInactiveToast() {
     if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
     const old = document.getElementById('inactiveToast');
@@ -915,7 +1032,6 @@ HTML_DASHBOARD = (
     setTimeout(() => toast?.remove(), 6000);
   }
 
-  // ===== MENU BURGER =====
   function openMenu() {
     document.getElementById('sideDrawer').classList.add('open');
     document.getElementById('menuOverlay').classList.add('open');
@@ -935,28 +1051,14 @@ HTML_DASHBOARD = (
     if (e.key === 'Escape') closeMenu();
   });
 
-  // ===== RECHARGEMENT AUTO =====
-  // Recharge quand la page redevient visible (retour sur l'onglet)
   document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) {
-      console.log('[DASHBOARD] Page visible → rechargement profil');
-      loadProfile(true);
-    }
+    if (!document.hidden) loadProfile();
   });
-
-  // Recharge quand la fenêtre reprend le focus
-  window.addEventListener('focus', function() {
-    loadProfile(true);
-  });
-
-  // Recharge quand on revient via le bouton retour du navigateur
+  window.addEventListener('focus', function() { loadProfile(); });
   window.addEventListener('pageshow', function(event) {
-    if (event.persisted) {
-      loadProfile(true);
-    }
+    if (event.persisted) loadProfile();
   });
 
-  // ===== DÉCONNEXION =====
   function logout() {
     if (navigator.vibrate) navigator.vibrate(15);
     localStorage.clear();
