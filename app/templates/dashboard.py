@@ -19,74 +19,6 @@ HTML_DASHBOARD = (
     position: relative;
   }
 
-  /* ===== PANNEAU DEBUG ===== */
-  .debug-panel {
-    position: fixed;
-    bottom: 110px;
-    left: 10px;
-    right: 10px;
-    background: #1a1a1a;
-    color: #00ff00;
-    font-family: 'Courier New', monospace;
-    font-size: 10px;
-    padding: 12px;
-    border-radius: 12px;
-    z-index: 99999;
-    max-height: 250px;
-    overflow-y: auto;
-    line-height: 1.5;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-    display: none;
-  }
-  .debug-panel.show { display: block; }
-  .debug-panel .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #333;
-    color: #00ffaa;
-    font-weight: 700;
-  }
-  .debug-panel .close-btn {
-    background: #ff3333;
-    color: #fff;
-    border: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 12px;
-    line-height: 1;
-  }
-  .debug-panel .line {
-    margin-bottom: 4px;
-    word-break: break-all;
-  }
-  .debug-panel .key { color: #ffff00; }
-  .debug-panel .val-true { color: #00ff00; font-weight: bold; }
-  .debug-panel .val-false { color: #ff6666; font-weight: bold; }
-  .debug-panel .val-null { color: #ff9900; font-weight: bold; }
-  .debug-toggle {
-    position: fixed;
-    bottom: 110px;
-    left: 10px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #1a1a1a;
-    color: #00ff00;
-    border: 2px solid #00ff00;
-    cursor: pointer;
-    z-index: 99998;
-    font-size: 16px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   /* ===== TOPBAR ===== */
   .topbar {
     display: flex; justify-content: space-between; align-items: center;
@@ -99,8 +31,27 @@ HTML_DASHBOARD = (
     display: flex; align-items: center; justify-content: center;
     font-weight: bold; font-size: 14px;
     flex-shrink: 0;
+    position: relative;
   }
-  .logo { font-size: 22px; font-weight: 800; color: var(--green); flex: 1; text-align: center; }
+  .avatar-top .live-dot {
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #4caf50;
+    border: 2px solid #fff;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+  }
+  .logo {
+    font-size: 22px; font-weight: 800; color: var(--green);
+    flex: 1; text-align: center;
+    cursor: pointer;
+    user-select: none;
+  }
   .logo span { color: var(--gold); }
   .topbar-actions {
     display: flex;
@@ -142,25 +93,19 @@ HTML_DASHBOARD = (
     pointer-events: none;
     transition: opacity 0.3s ease;
   }
-  .menu-overlay.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
+  .menu-overlay.open { opacity: 1; pointer-events: auto; }
 
   /* ===== DRAWER LATÉRAL ===== */
   .side-drawer {
     position: fixed;
     top: 0; right: 0;
-    height: 100vh;
-    height: 100dvh;
-    width: 82%;
-    max-width: 340px;
+    height: 100vh; height: 100dvh;
+    width: 82%; max-width: 340px;
     background: #fff;
     z-index: 999;
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
     box-shadow: -8px 0 30px rgba(0,0,0,0.15);
     padding-top: var(--safe-top);
     padding-bottom: var(--safe-bottom);
@@ -245,10 +190,7 @@ HTML_DASHBOARD = (
     font-size: 15px; font-weight: 600;
     transition: background 0.2s, transform 0.15s;
   }
-  .drawer-item:active {
-    background: #f5f5f5;
-    transform: scale(0.98);
-  }
+  .drawer-item:active { background: #f5f5f5; transform: scale(0.98); }
   .drawer-item-icon {
     width: 40px; height: 40px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
@@ -345,6 +287,25 @@ HTML_DASHBOARD = (
     100% { background-position: -200% 0; }
   }
 
+  /* ===== ANIMATION SOLDE CHANGÉ ===== */
+  .balance-flash {
+    animation: flash 1s ease-out;
+  }
+  @keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; transform: scale(1.05); }
+  }
+  .balance-up {
+    animation: bounceUp 0.6s ease-out;
+  }
+  @keyframes bounceUp {
+    0% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+    60% { transform: translateY(0); }
+    80% { transform: translateY(-4px); }
+    100% { transform: translateY(0); }
+  }
+
   /* ===== PROFIL ===== */
   .profile-card {
     margin: 0 20px 20px; padding: 16px;
@@ -379,6 +340,7 @@ HTML_DASHBOARD = (
     border-radius: 20px; padding: 20px; color: #fff;
     position: relative; overflow: hidden;
     box-shadow: 0 8px 20px rgba(46, 125, 50, 0.3);
+    transition: transform 0.2s;
   }
   .balance-card::before {
     content: ''; position: absolute; top: -50px; right: -50px;
@@ -467,11 +429,47 @@ HTML_DASHBOARD = (
     width: 40px; height: 30px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
   }
+
+  /* ===== PANNEAU DEBUG (caché) ===== */
+  .debug-panel {
+    position: fixed;
+    bottom: 110px;
+    left: 10px; right: 10px;
+    background: #1a1a1a; color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    z-index: 99999;
+    max-height: 250px;
+    overflow-y: auto;
+    line-height: 1.5;
+    display: none;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  }
+  .debug-panel.show { display: block; }
+  .debug-panel .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid #333;
+    color: #00ffaa; font-weight: 700;
+  }
+  .debug-panel .close-btn {
+    background: #ff3333; color: #fff;
+    border: none; width: 20px; height: 20px;
+    border-radius: 50%; cursor: pointer;
+    font-size: 12px; line-height: 1;
+  }
+  .debug-panel .line { margin-bottom: 4px; word-break: break-all; }
+  .debug-panel .key { color: #ffff00; }
+  .debug-panel .val-true { color: #00ff00; font-weight: bold; }
+  .debug-panel .val-false { color: #ff6666; font-weight: bold; }
+  .debug-panel .val-null { color: #ff9900; font-weight: bold; }
 </style>
 </head>
 <body>
 
-<!-- PANNEAU DEBUG -->
+<!-- PANNEAU DEBUG (caché, accessible via 5 clics sur le logo) -->
 <div class="debug-panel" id="debugPanel">
   <div class="header">
     <span>🔍 DEBUG PROFIL</span>
@@ -479,8 +477,6 @@ HTML_DASHBOARD = (
   </div>
   <div id="debugContent">Chargement...</div>
 </div>
-
-<button class="debug-toggle" onclick="toggleDebug()" title="Voir le débug">🐛</button>
 
 <!-- OVERLAY -->
 <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
@@ -640,8 +636,11 @@ HTML_DASHBOARD = (
 <!-- APP -->
 <div class="app">
   <header class="topbar">
-    <div class="avatar-top" id="userInitial">A</div>
-    <div class="logo">Tri<span>Boost</span></div>
+    <div class="avatar-top" id="userInitial">
+      A
+      <div class="live-dot"></div>
+    </div>
+    <div class="logo" id="appLogo" onclick="countLogoClick()">Tri<span>Boost</span></div>
     <div class="topbar-actions">
       <button class="icon-btn refresh-btn" id="refreshBtn" onclick="manualRefresh()" aria-label="Rafraîchir">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -690,7 +689,7 @@ HTML_DASHBOARD = (
   </div>
 
   <!-- SOLDE -->
-  <div class="balance-card">
+  <div class="balance-card" id="balanceCard">
     <div class="balance-label">
       VOS SOLDES DISPONIBLES
       <div class="arrow-circle">›</div>
@@ -835,7 +834,7 @@ HTML_DASHBOARD = (
   if (email) {
     document.getElementById('userName').textContent = displayName;
     const initial = displayName.charAt(0).toUpperCase();
-    document.getElementById('userInitial').textContent = initial;
+    document.getElementById('userInitial').innerHTML = initial + '<div class="live-dot"></div>';
     document.getElementById('userInitial2').textContent = initial;
     document.getElementById('userInfo').textContent = email;
     document.getElementById('drawerInitial').textContent = initial;
@@ -844,78 +843,38 @@ HTML_DASHBOARD = (
     document.getElementById('drawerCode').textContent = referralCode;
   }
 
+  // ===== ÉTAT GLOBAL =====
   let isActivated = false;
+  let lastBalance = null;
+  let lastTotalEarned = null;
+  let loadingProfile = false;
+  let autoRefreshInterval = null;
 
-  // ===== DEBUG =====
-  function toggleDebug() {
-    document.getElementById('debugPanel').classList.toggle('show');
-  }
-  function debugLog(lines) {
-    const c = document.getElementById('debugContent');
-    c.innerHTML = lines;
-  }
-  function valClass(v) {
-    if (v === true || v === "true" || v === 1 || v === "1") return 'val-true';
-    if (v === false || v === "false" || v === 0 || v === "0") return 'val-false';
-    return 'val-null';
-  }
-  function dumpValue(v) {
-    if (v === null) return 'null';
-    if (v === undefined) return 'undefined';
-    if (typeof v === 'object') return JSON.stringify(v);
-    return String(v);
-  }
-
-  // ===== CHARGEMENT PROFIL =====
-  async function loadProfile() {
-    debugLog(`<div class="line">⏳ Chargement...</div>`);
+  // ===== CHARGEMENT DU PROFIL =====
+  async function loadProfile(silent = false) {
+    if (loadingProfile) return;
+    loadingProfile = true;
 
     try {
-      const url = '/api/auth/profile/' + userId + '?t=' + Date.now();
-      const res = await fetch(url, {
+      const res = await fetch('/api/auth/profile/' + userId + '?t=' + Date.now(), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
 
       if (res.status === 401) {
-        debugLog(`<div class="line"><span class="key">⛔ Token invalide (401)</span></div>`);
         localStorage.clear();
         window.location.href = '/login';
         return;
       }
 
       if (!res.ok) {
-        const errText = await res.text();
-        debugLog(`
-          <div class="line"><span class="key">❌ HTTP</span> ${res.status}</div>
-          <div class="line"><span class="key">Erreur:</span> ${errText}</div>
-        `);
-        showDefaultProfile();
+        if (!silent) showDefaultProfile();
         return;
       }
 
       const data = await res.json();
-      const p = data.profile || {};
+      const p = data.profile;
 
-      // Log complet
-      debugLog(`
-        <div class="line"><span class="key">user_id:</span> ${userId}</div>
-        <div class="line"><span class="key">fallback:</span> <span class="${p.fallback ? 'val-false' : 'val-true'}">${p.fallback}</span></div>
-        <div class="line"><span class="key">is_activated (raw):</span> <span class="${valClass(p.is_activated)}">${dumpValue(p.is_activated)}</span></div>
-        <div class="line"><span class="key">type:</span> ${typeof p.is_activated}</div>
-        <div class="line"><span class="key">activated_at:</span> ${p.activated_at || 'null'}</div>
-        <div class="line"><span class="key">full_name:</span> ${p.full_name || 'null'}</div>
-        <div class="line"><span class="key">referral_code:</span> ${p.referral_code || 'null'}</div>
-        <div class="line"><span class="key">wallet_balance:</span> ${p.wallet_balance}</div>
-        <div class="line"><span class="key">total_earned:</span> ${p.total_earned}</div>
-        <div class="line" style="margin-top:6px; padding-top:6px; border-top:1px solid #333;">
-          <span class="key">Toutes les clés:</span>
-        </div>
-        <div class="line">${Object.keys(p).join(', ')}</div>
-      `);
-
-      console.log('[DASHBOARD] Profil complet:', p);
-
-      // Détection is_activated
+      // Détection activation robuste
       const raw = p.is_activated;
       isActivated = (
         raw === true ||
@@ -924,27 +883,55 @@ HTML_DASHBOARD = (
         raw === "1"
       );
 
-      // Solde
+      // Solde avec détection de changement
+      const newBalance = Number(p.wallet_balance || 0);
+      const newTotal = Number(p.total_earned || 0);
+
       const wb = document.getElementById('walletBalance');
       wb.classList.remove('skeleton');
-      wb.textContent = Number(p.wallet_balance || 0).toLocaleString('fr-FR');
-      document.getElementById('totalEarned').textContent =
-        Number(p.total_earned || 0).toLocaleString('fr-FR');
 
+      // Animation si le solde a changé (modif admin)
+      if (lastBalance !== null && newBalance !== lastBalance) {
+        const diff = newBalance - lastBalance;
+        console.log('[DASHBOARD] 💰 Solde modifié :', lastBalance, '→', newBalance, `(${diff > 0 ? '+' : ''}${diff})`);
+        wb.classList.add('balance-flash');
+        document.getElementById('balanceCard').classList.add('balance-up');
+        if (diff > 0) {
+          showToast(`+${diff.toLocaleString('fr-FR')} FCFA crédités !`, 'success');
+        }
+        setTimeout(() => {
+          wb.classList.remove('balance-flash');
+          document.getElementById('balanceCard').classList.remove('balance-up');
+        }, 1500);
+      }
+
+      wb.textContent = newBalance.toLocaleString('fr-FR');
+      document.getElementById('totalEarned').textContent = newTotal.toLocaleString('fr-FR');
+
+      lastBalance = newBalance;
+      lastTotalEarned = newTotal;
+
+      // Code parrain
       if (p.referral_code) {
         localStorage.setItem('user_referral_code', p.referral_code);
         document.getElementById('drawerCode').textContent = p.referral_code;
       }
 
+      // Nom mis à jour par admin
+      if (p.full_name && p.full_name !== name) {
+        localStorage.setItem('user_name', p.full_name);
+        document.getElementById('userName').textContent = p.full_name;
+        document.getElementById('drawerName').textContent = p.full_name;
+      }
+
       updateActivationUI(isActivated);
+      updateDebug(p);
 
     } catch (err) {
-      console.error(err);
-      debugLog(`
-        <div class="line"><span class="key">💥 Erreur JS:</span></div>
-        <div class="line">${err.message}</div>
-      `);
-      showDefaultProfile();
+      console.error('Erreur profil:', err);
+      if (!silent) showDefaultProfile();
+    } finally {
+      loadingProfile = false;
     }
   }
 
@@ -972,6 +959,56 @@ HTML_DASHBOARD = (
     }
   }
 
+  // ===== DEBUG PANEL (caché — 5 clics sur le logo) =====
+  let logoClickCount = 0;
+  let logoClickTimer = null;
+
+  function countLogoClick() {
+    logoClickCount++;
+    clearTimeout(logoClickTimer);
+    logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1500);
+
+    if (logoClickCount >= 5) {
+      logoClickCount = 0;
+      toggleDebug();
+      vibrate([10, 30, 10]);
+    }
+  }
+
+  function toggleDebug() {
+    document.getElementById('debugPanel').classList.toggle('show');
+  }
+
+  function updateDebug(p) {
+    const c = document.getElementById('debugContent');
+    if (!c) return;
+
+    const valClass = (v) => {
+      if (v === true || v === "true" || v === 1 || v === "1") return 'val-true';
+      if (v === false || v === "false" || v === 0 || v === "0") return 'val-false';
+      return 'val-null';
+    };
+
+    const raw = p.is_activated;
+    c.innerHTML = `
+      <div class="line"><span class="key">user_id:</span> ${userId}</div>
+      <div class="line"><span class="key">is_activated:</span> <span class="${valClass(raw)}">${raw}</span></div>
+      <div class="line"><span class="key">type:</span> ${typeof raw}</div>
+      <div class="line"><span class="key">full_name:</span> ${p.full_name || 'null'}</div>
+      <div class="line"><span class="key">referral_code:</span> ${p.referral_code || 'null'}</div>
+      <div class="line"><span class="key">wallet_balance:</span> ${p.wallet_balance}</div>
+      <div class="line"><span class="key">total_earned:</span> ${p.total_earned}</div>
+      <div class="line"><span class="key">activated_at:</span> ${p.activated_at || 'null'}</div>
+      <div class="line" style="margin-top:6px;padding-top:6px;border-top:1px solid #333;">
+        <span class="key">Clés:</span> ${Object.keys(p).join(', ')}
+      </div>
+      <div class="line" style="color:#00ffaa;margin-top:4px;">
+        🔄 Auto-refresh : 30s
+      </div>
+    `;
+  }
+
+  // ===== REFRESH MANUEL =====
   function manualRefresh() {
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spinning');
@@ -981,6 +1018,7 @@ HTML_DASHBOARD = (
     });
   }
 
+  // ===== ACTIONS (bloquées si non activé) =====
   function handleAction(action) {
     if (!isActivated) {
       showInactiveToast();
@@ -989,8 +1027,33 @@ HTML_DASHBOARD = (
     if (action === 'withdraw') {
       window.location.href = '/paiements';
     } else if (action === 'history') {
-      window.location.href = '/paiements#historique';
+      window.location.href = '/historique';
     }
+  }
+
+  // ===== TOAST =====
+  function showToast(msg, type = 'success') {
+    const old = document.getElementById('toast');
+    if (old) old.remove();
+
+    const bg = type === 'success'
+      ? 'linear-gradient(135deg, #2e7d32, #1b5e20)'
+      : 'linear-gradient(135deg, #d32f2f, #b71c1c)';
+
+    const t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: ${bg}; color: #fff;
+      padding: 14px 20px; border-radius: 14px;
+      font-size: 13px; font-weight: 700;
+      z-index: 10001; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      max-width: 340px; text-align: center;
+      animation: slideDown 0.3s ease-out;
+    `;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
   }
 
   function showInactiveToast() {
@@ -1032,6 +1095,7 @@ HTML_DASHBOARD = (
     setTimeout(() => toast?.remove(), 6000);
   }
 
+  // ===== MENU BURGER =====
   function openMenu() {
     document.getElementById('sideDrawer').classList.add('open');
     document.getElementById('menuOverlay').classList.add('open');
@@ -1051,22 +1115,49 @@ HTML_DASHBOARD = (
     if (e.key === 'Escape') closeMenu();
   });
 
+  // ===== AUTO-REFRESH =====
+  // 1. Quand la page redevient visible
   document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) loadProfile();
-  });
-  window.addEventListener('focus', function() { loadProfile(); });
-  window.addEventListener('pageshow', function(event) {
-    if (event.persisted) loadProfile();
+    if (!document.hidden) {
+      console.log('[DASHBOARD] Page visible → reload');
+      loadProfile(true);
+    }
   });
 
+  // 2. Quand la fenêtre reprend le focus
+  window.addEventListener('focus', function() {
+    loadProfile(true);
+  });
+
+  // 3. Quand on revient via le bouton retour
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) loadProfile(true);
+  });
+
+  // 4. Auto-refresh toutes les 30 secondes (pour voir les modifs admin)
+  function startAutoRefresh() {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    autoRefreshInterval = setInterval(() => {
+      if (!document.hidden) {
+        console.log('[DASHBOARD] Auto-refresh 30s');
+        loadProfile(true);
+      }
+    }, 30000);
+  }
+
+  // ===== DÉCONNEXION =====
   function logout() {
     if (navigator.vibrate) navigator.vibrate(15);
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     localStorage.clear();
     window.location.href = '/login';
   }
 
   // ===== INIT =====
   loadProfile();
+  startAutoRefresh();
+
+  console.log('[DASHBOARD] ✅ Auto-refresh activé (30s)');
 </script>
 </body>
 </html>
