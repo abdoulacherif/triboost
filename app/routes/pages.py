@@ -18,11 +18,11 @@ from app.templates.placeholder import (
     ICON_FORMATION,
     ICON_PAIEMENTS,
     ICON_SHOP,
-    ICON_TACHE,
     ICON_TOURNER,
     make_placeholder,
 )
 from app.templates.register import HTML_REGISTER
+from app.templates.taches import HTML_TACHES
 
 router = APIRouter()
 
@@ -84,7 +84,7 @@ async def commissions_page():
 
 
 # ============================================================
-# BOUTIQUE — NE PAS DOUBLONNER AILLEURS
+# BOUTIQUE (⚠️ UNE SEULE FOIS)
 # ============================================================
 @router.get("/boutique", response_class=HTMLResponse)
 async def boutique_page():
@@ -97,17 +97,20 @@ async def formation_detail_page(formation_id: str):
 
 
 # ============================================================
+# TÂCHES
+# ============================================================
+@router.get("/tache", response_class=HTMLResponse)
+async def tache_page():
+    return HTML_TACHES
+
+
+# ============================================================
 # PLACEHOLDERS (pages pas encore finies)
-# ⚠️ NE JAMAIS METTRE /boutique ICI
+# ⚠️ NE JAMAIS METTRE /boutique ou /tache ICI
 # ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
     return make_placeholder("Affaire", ICON_AFFAIRE, "Opportunités business.", "green")
-
-
-@router.get("/tache", response_class=HTMLResponse)
-async def tache_page():
-    return make_placeholder("Tâche", ICON_TACHE, "Missions à accomplir.", "blue")
 
 
 @router.get("/tourner", response_class=HTMLResponse)
