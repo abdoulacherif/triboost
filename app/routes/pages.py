@@ -84,7 +84,7 @@ async def commissions_page():
 
 
 # ============================================================
-# BOUTIQUE (⚠️ UNE SEULE FOIS)
+# BOUTIQUE
 # ============================================================
 @router.get("/boutique", response_class=HTMLResponse)
 async def boutique_page():
@@ -105,8 +105,7 @@ async def tache_page():
 
 
 # ============================================================
-# PLACEHOLDERS (pages pas encore finies)
-# ⚠️ NE JAMAIS METTRE /boutique ou /tache ICI
+# PLACEHOLDERS (⚠️ NE JAMAIS METTRE /boutique OU /tache ICI)
 # ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
