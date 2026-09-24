@@ -1,62 +1,5 @@
-from fastapi import APIRouter, HTTPException, Request
-
-from app.core.supabase_client import get_supabase, get_supabase_admin
-
-router = APIRouter()
-
-
 # ============================================================
-# LISTER LES TÂCHES DISPONIBLES
-# ============================================================
-@router.get("/")
-async def list_tasks(request: Request):
-    """Liste toutes les tâches actives + statut de l'utilisateur."""
-    try:
-        admin = get_supabase_admin()
-
-        result = (
-            admin.table("tasks")
-            .select("*")
-            .eq("is_active", True)
-            .order("sort_order", desc=False)
-            .order("created_at", desc=True)
-            .execute()
-        )
-        tasks = result.data or []
-
-        user_submissions = {}
-        auth_header = request.headers.get("Authorization", "")
-        if auth_header.startswith("Bearer "):
-            token = auth_header.replace("Bearer ", "")
-            try:
-                supabase_anon = get_supabase()
-                user = supabase_anon.auth.get_user(token)
-                if user.user:
-                    subs = (
-                        admin.table("task_submissions")
-                        .select("task_id, status, reward, created_at, validated_at, admin_note")
-                        .eq("user_id", user.user.id)
-                        .execute()
-                    )
-                    for s in (subs.data or []):
-                        user_submissions[s["task_id"]] = s
-            except Exception:
-                pass
-
-        for t in tasks:
-            sub = user_submissions.get(t["id"])
-            t["user_status"] = sub["status"] if sub else None
-            t["user_submission"] = sub if sub else None
-
-        return {"success": True, "tasks": tasks, "count": len(tasks)}
-
-    except Exception as e:
-        print(f"[TASKS] Erreur list: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ============================================================
-# SOUMETTRE UNE PREUVE
+# SOUMETTRE UNE PREUVE (⚠️ compte activé requis)
 # ============================================================
 @router.post("/{task_id}/submit")
 async def submit_task(task_id: str, request: Request):
@@ -74,6 +17,26 @@ async def submit_task(task_id: str, request: Request):
             raise HTTPException(status_code=401, detail="Token invalide")
 
         user_id = user_response.user.id
+        admin = get_supabase_admin()
+
+        # ⚠️ VÉRIFIER QUE LE COMPTE EST ACTIVÉ
+        profile_check = (
+            admin.table("profiles")
+            .select("is_activated")
+            .eq("id", user_id)
+            .execute()
+        )
+
+        is_activated = False
+        if profile_check.data and len(profile_check.data) > 0:
+            raw = profile_check.data[0].get("is_activated")
+            is_activated = raw is True or raw == "true" or raw == 1 or raw == "1"
+
+        if not is_activated:
+            raise HTTPException(
+                status_code=403,
+                detail="Compte non activé. Activez pour 3 600 FCFA pour accomplir des tâches."
+            )
 
         body = await request.json()
         network = (body.get("network") or "").strip()
@@ -84,8 +47,6 @@ async def submit_task(task_id: str, request: Request):
             raise HTTPException(status_code=400, detail="Réseau obligatoire")
         if not proof_url:
             raise HTTPException(status_code=400, detail="Lien de preuve obligatoire")
-
-        admin = get_supabase_admin()
 
         task_result = (
             admin.table("tasks")
@@ -146,39 +107,4 @@ async def submit_task(task_id: str, request: Request):
         raise
     except Exception as e:
         print(f"[TASKS] Erreur submit: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ============================================================
-# MES SOUMISSIONS
-# ============================================================
-@router.get("/my-submissions")
-async def my_submissions(request: Request):
-    """Retourne les soumissions de l'utilisateur."""
-    try:
-        auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Token manquant")
-
-        token = auth_header.replace("Bearer ", "")
-        supabase_anon = get_supabase()
-        user_response = supabase_anon.auth.get_user(token)
-        if not user_response.user:
-            raise HTTPException(status_code=401, detail="Token invalide")
-
-        admin = get_supabase_admin()
-        result = (
-            admin.table("task_submissions")
-            .select("id, task_id, network, proof_url, status, reward, admin_note, created_at, validated_at, tasks(title, icon)")
-            .eq("user_id", user_response.user.id)
-            .order("created_at", desc=True)
-            .execute()
-        )
-
-        return {"success": True, "submissions": result.data or []}
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"[TASKS] Erreur my-submissions: {e}")
         raise HTTPException(status_code=400, detail=str(e))
