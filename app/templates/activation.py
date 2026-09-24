@@ -19,6 +19,7 @@ HTML_ACTIVATION = (
     padding-top: var(--safe-top);
     display: flex;
     flex-direction: column;
+    margin: 0 auto;
   }
   .topbar-act {
     display: flex; justify-content: space-between; align-items: center;
@@ -64,7 +65,6 @@ HTML_ACTIVATION = (
     position: relative; z-index: 2;
   }
 
-  /* Infos */
   .info-row {
     display: flex; align-items: center; gap: 12px;
     background: var(--green-light);
@@ -76,7 +76,6 @@ HTML_ACTIVATION = (
     font-weight: 600;
   }
 
-  /* Formulaire */
   .form-group { margin-bottom: 14px; }
   .form-group label {
     display: block; font-size: 12px;
@@ -110,7 +109,6 @@ HTML_ACTIVATION = (
     padding-right: 38px;
   }
 
-  /* Avantages */
   .benefits-title {
     font-size: 14px; font-weight: 800;
     margin: 20px 0 12px;
@@ -132,9 +130,10 @@ HTML_ACTIVATION = (
     color: var(--green);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
+    font-weight: 800;
+    font-size: 11px;
   }
 
-  /* Bouton */
   .btn-pay {
     width: 100%;
     height: 56px;
@@ -171,6 +170,25 @@ HTML_ACTIVATION = (
     align-items: center;
     justify-content: center;
     gap: 4px;
+  }
+
+  .alert {
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+    line-height: 1.4;
+  }
+  .alert.error {
+    background: var(--red-light);
+    color: var(--red);
+    border-left: 4px solid var(--red);
+  }
+  .alert.success {
+    background: var(--green-light);
+    color: var(--green);
+    border-left: 4px solid var(--green);
   }
 </style>
 </head>
@@ -239,7 +257,6 @@ HTML_ACTIVATION = (
         autocomplete="tel">
     </div>
 
-    <!-- AVANTAGES -->
     <div class="benefits-title">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -265,7 +282,6 @@ HTML_ACTIVATION = (
       </div>
     </div>
 
-    <!-- BOUTON -->
     <button type="submit" class="btn-pay" id="payBtn">
       <span id="payBtnText">Payer 3 600 FCFA</span>
     </button>
@@ -292,22 +308,28 @@ HTML_ACTIVATION = (
     window.location.href = '/login';
   }
 
-  // Vérifier si déjà activé
-  async function checkActivation() {
+  // ===== VÉRIFIER SI DÉJÀ ACTIVÉ =====
+  // ⚠️ On ne redirige QUE si c'est bien activé côté serveur
+  async function checkIfAlreadyActivated() {
     try {
       const res = await fetch('/api/auth/profile/' + userId, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!res.ok) return;
       const data = await res.json();
-      if (data.profile?.is_activated) {
+      if (data.profile && data.profile.is_activated === true) {
+        // Déjà activé → rediriger vers dashboard
         window.location.href = '/dashboard';
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Erreur vérif activation:', e);
+    }
   }
-  checkActivation();
+  checkIfAlreadyActivated();
 
   // ===== SOUMISSION DU PAIEMENT =====
+  // ⚠️ Appelle /api/payments/initiate (LeekPay)
+  //    PAS /api/auth/activate (qui activerait direct)
   async function submitPayment(e) {
     e.preventDefault();
     vibrate(8);
@@ -315,7 +337,9 @@ HTML_ACTIVATION = (
     const btn = document.getElementById('payBtn');
     const btnText = document.getElementById('payBtnText');
     const errEl = document.getElementById('errorMsg');
+    const sucEl = document.getElementById('successMsg');
     errEl.style.display = 'none';
+    sucEl.style.display = 'none';
 
     const country = document.getElementById('country').value;
     const phone = document.getElementById('phone').value.trim();
@@ -330,6 +354,7 @@ HTML_ACTIVATION = (
     btnText.innerHTML = '<div class="spinner"></div>';
 
     try {
+      // ===== APPEL À L'API LEEKPAY =====
       const res = await fetch('/api/payments/initiate', {
         method: 'POST',
         headers: {
@@ -341,14 +366,21 @@ HTML_ACTIVATION = (
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.detail || 'Erreur de paiement');
+      if (!res.ok) {
+        throw new Error(data.detail || 'Erreur de paiement');
+      }
 
-      // Rediriger vers LeekPay
+      // ===== REDIRECTION VERS LEEKPAY =====
       if (data.payment_url) {
+        sucEl.textContent = '✓ Redirection vers LeekPay...';
+        sucEl.style.display = 'block';
         vibrate(15);
-        window.location.href = data.payment_url;
+        // Rediriger après un court délai pour que l'utilisateur voie le message
+        setTimeout(() => {
+          window.location.href = data.payment_url;
+        }, 500);
       } else {
-        throw new Error('URL de paiement manquante');
+        throw new Error('URL de paiement non reçue');
       }
 
     } catch (err) {
