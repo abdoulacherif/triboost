@@ -37,6 +37,34 @@ HTML_TACHES = (
   .page-title { font-size: 18px; font-weight: 800; color: var(--text-dark); flex: 1; text-align: center; }
   .spacer { width: 40px; }
 
+  /* Bannière inactif */
+  .inactive-banner {
+    display: none;
+    margin: 12px 16px;
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    border: 1.5px solid #ffb74d;
+    border-radius: 16px;
+    padding: 12px 14px;
+    align-items: center;
+    gap: 10px;
+  }
+  .inactive-banner.show { display: flex; }
+  .inactive-banner .icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: #ffe0b2; color: #e65100;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .inactive-banner .text { flex: 1; min-width: 0; }
+  .inactive-banner .title { font-size: 12px; font-weight: 800; color: #e65100; }
+  .inactive-banner .desc { font-size: 10px; color: #bf360c; }
+  .inactive-banner .action {
+    background: #e65100; color: #fff;
+    border: none; padding: 6px 10px;
+    border-radius: 8px; font-size: 10px; font-weight: 700;
+    cursor: pointer; flex-shrink: 0;
+  }
+
   .hero {
     margin: 16px;
     background: linear-gradient(135deg, var(--green), var(--green-dark));
@@ -104,6 +132,7 @@ HTML_TACHES = (
   .tc-badge.pending { background: #fff3e0; color: #e65100; }
   .tc-badge.approved { background: var(--green-light); color: var(--green); }
   .tc-badge.rejected { background: var(--red-light); color: var(--red); }
+  .tc-badge.locked { background: #f5f5f5; color: #9e9e9e; }
 
   .tc-reward { font-size: 20px; font-weight: 900; color: var(--green); white-space: nowrap; flex-shrink: 0; }
 
@@ -125,6 +154,7 @@ HTML_TACHES = (
   .tc-btn.pending-btn { background: #fff3e0; color: #e65100; box-shadow: none; }
   .tc-btn.done-btn { background: #f5f5f5; color: #9e9e9e; box-shadow: none; }
   .tc-btn.rejected-btn { background: var(--red-light); color: var(--red); box-shadow: none; }
+  .tc-btn.locked-btn { background: #fff3e0; color: #e65100; box-shadow: none; }
 
   .modal-overlay {
     position: fixed; inset: 0;
@@ -234,6 +264,21 @@ HTML_TACHES = (
     <div class="spacer"></div>
   </header>
 
+  <!-- Bannière inactif -->
+  <div class="inactive-banner" id="inactiveBanner">
+    <div class="icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="title">Lecture seule</div>
+      <div class="desc">Activez pour accomplir les tâches</div>
+    </div>
+    <button class="action" onclick="location.href='/activation'">Activer</button>
+  </div>
+
   <div class="hero">
     <div class="hero-content">
       <div class="hero-title">💼 Gagne de l'argent facilement</div>
@@ -314,7 +359,25 @@ HTML_TACHES = (
 
   let allTasks = [];
   let currentTask = null;
+  let isActivated = false;
 
+  // ===== CHARGER LE PROFIL (pour savoir si activé) =====
+  async function loadProfile() {
+    try {
+      const res = await fetch('/api/auth/profile/' + userId + '?t=' + Date.now(), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const raw = data.profile?.is_activated;
+      isActivated = (raw === true || raw === "true" || raw === 1 || raw === "1");
+      if (!isActivated) {
+        document.getElementById('inactiveBanner').classList.add('show');
+      }
+    } catch (e) {}
+  }
+
+  // ===== CHARGER LES TÂCHES =====
   async function loadTasks() {
     const list = document.getElementById('tasksList');
     try {
@@ -345,7 +408,7 @@ HTML_TACHES = (
   function renderTasks() {
     const list = document.getElementById('tasksList');
     if (allTasks.length === 0) {
-      list.innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>Aucune tâche disponible</h3><p>Reviens plus tard.</p></div>`;
+      list.innerHTML = `<div class="empty-state"><h3>Aucune tâche disponible</h3><p>Reviens plus tard.</p></div>`;
       return;
     }
     list.innerHTML = allTasks.map(t => renderTask(t)).join('');
@@ -369,6 +432,10 @@ HTML_TACHES = (
     } else if (status === 'rejected') {
       badge = '<span class="tc-badge rejected">✗ Rejeté</span>';
       btnHTML = `<button class="tc-btn rejected-btn" onclick="openModal('${t.id}')">Ressoumettre</button>`;
+    } else if (!isActivated) {
+      // Compte non activé → pas encore de soumission
+      badge = '<span class="tc-badge locked">🔒 Non activé</span>';
+      btnHTML = `<button class="tc-btn locked-btn" onclick="showInactiveToast()">🔒 Activer</button>`;
     }
 
     return `
@@ -391,6 +458,10 @@ HTML_TACHES = (
   }
 
   function openModal(taskId) {
+    if (!isActivated) {
+      showInactiveToast();
+      return;
+    }
     currentTask = allTasks.find(t => t.id === taskId);
     if (!currentTask) return;
     vibrate(8);
@@ -416,6 +487,11 @@ HTML_TACHES = (
   async function submitProof(e) {
     e.preventDefault();
     if (!currentTask) return;
+    if (!isActivated) {
+      closeModal();
+      showInactiveToast();
+      return;
+    }
     vibrate(8);
     const btn = document.getElementById('submitBtn');
     const errEl = document.getElementById('modalError');
@@ -454,6 +530,46 @@ HTML_TACHES = (
     }
   }
 
+  // ===== TOAST INACTIF =====
+  function showInactiveToast() {
+    vibrate([20, 40, 20]);
+    const old = document.getElementById('inactiveToast');
+    if (old) old.remove();
+
+    const t = document.createElement('div');
+    t.id = 'inactiveToast';
+    t.style.cssText = `
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #e65100, #bf360c);
+      color: #fff; padding: 16px 20px; border-radius: 16px;
+      font-size: 13px; font-weight: 600; z-index: 10000;
+      box-shadow: 0 10px 30px rgba(230, 81, 0, 0.5);
+      max-width: 340px; text-align: center; line-height: 1.5;
+    `;
+    t.innerHTML = `
+      <div style="font-size:24px; margin-bottom:6px;">🔒</div>
+      <div><strong>Compte non activé</strong></div>
+      <div style="font-size:12px; opacity:0.9; margin-top:4px;">
+        Activez pour 3 600 FCFA pour accomplir des tâches
+      </div>
+      <button onclick="location.href='/activation'" style="
+        margin-top:12px; background:#fff; color:#e65100;
+        border:none; padding:10px 20px; border-radius:10px;
+        font-weight:800; font-size:13px; cursor:pointer;
+        font-family:inherit; width:100%;
+      ">Activer maintenant</button>
+      <button onclick="this.parentElement.remove()" style="
+        margin-top:6px; background:transparent; color:#fff;
+        border:1px solid rgba(255,255,255,0.4);
+        padding:8px 20px; border-radius:10px;
+        font-weight:600; font-size:12px; cursor:pointer;
+        font-family:inherit; width:100%;
+      ">Plus tard</button>
+    `;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 6000);
+  }
+
   function escapeHtml(s) {
     if (!s) return '';
     return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
@@ -467,7 +583,11 @@ HTML_TACHES = (
     setTimeout(() => t.remove(), 4000);
   }
 
-  loadTasks();
+  // ===== INIT =====
+  (async () => {
+    await loadProfile();
+    await loadTasks();
+  })();
 </script>
 </body>
 </html>
