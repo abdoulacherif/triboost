@@ -23,27 +23,43 @@ HTML_DASHBOARD = (
   .topbar {
     display: flex; justify-content: space-between; align-items: center;
     padding: 16px 20px;
+    gap: 8px;
   }
   .avatar-top {
     width: 36px; height: 36px; border-radius: 50%;
     background: var(--green); color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-weight: bold; font-size: 14px;
+    flex-shrink: 0;
   }
-  .logo { font-size: 22px; font-weight: 800; color: var(--green); }
+  .logo { font-size: 22px; font-weight: 800; color: var(--green); flex: 1; text-align: center; }
   .logo span { color: var(--gold); }
-  .menu-burger {
+  .topbar-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
     width: 40px; height: 40px;
     border-radius: 12px;
-    background: var(--green-light);
-    color: var(--green);
     border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: transform 0.15s, background 0.2s;
   }
-  .menu-burger:active {
-    transform: scale(0.92);
-    background: #c8e6c9;
+  .icon-btn:active { transform: scale(0.92); }
+  .refresh-btn {
+    background: var(--gold-light);
+    color: #f9a825;
+  }
+  .refresh-btn.spinning svg {
+    animation: rotate 0.8s linear infinite;
+  }
+  @keyframes rotate {
+    to { transform: rotate(360deg); }
+  }
+  .menu-burger {
+    background: var(--green-light);
+    color: var(--green);
   }
 
   /* ===== OVERLAY ===== */
@@ -82,9 +98,7 @@ HTML_DASHBOARD = (
     padding-bottom: var(--safe-bottom);
     overflow-y: auto;
   }
-  .side-drawer.open {
-    transform: translateX(0);
-  }
+  .side-drawer.open { transform: translateX(0); }
 
   .drawer-header {
     padding: 24px 20px 20px;
@@ -95,20 +109,14 @@ HTML_DASHBOARD = (
     flex-shrink: 0;
   }
   .drawer-header::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
+    content: ''; position: absolute; top: -60px; right: -60px;
     width: 180px; height: 180px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 50%;
+    background: rgba(255,255,255,0.08); border-radius: 50%;
   }
   .drawer-header::after {
-    content: '';
-    position: absolute;
-    bottom: -40px; left: -40px;
+    content: ''; position: absolute; bottom: -40px; left: -40px;
     width: 120px; height: 120px;
-    background: rgba(251, 192, 45, 0.2);
-    border-radius: 50%;
+    background: rgba(251, 192, 45, 0.2); border-radius: 50%;
   }
   .drawer-close {
     position: absolute;
@@ -120,12 +128,8 @@ HTML_DASHBOARD = (
     border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     z-index: 2;
-    transition: transform 0.15s, background 0.2s;
   }
-  .drawer-close:active {
-    transform: scale(0.9);
-    background: rgba(255,255,255,0.3);
-  }
+  .drawer-close:active { transform: scale(0.9); }
   .drawer-user {
     display: flex; align-items: center; gap: 14px;
     position: relative; z-index: 2;
@@ -141,8 +145,7 @@ HTML_DASHBOARD = (
   }
   .drawer-user-info { flex: 1; min-width: 0; }
   .drawer-user-info h4 {
-    font-size: 15px; font-weight: 700;
-    margin-bottom: 2px;
+    font-size: 15px; font-weight: 700; margin-bottom: 2px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .drawer-user-info p {
@@ -152,41 +155,26 @@ HTML_DASHBOARD = (
   .drawer-user-info .drawer-code {
     display: inline-block;
     background: rgba(251, 192, 45, 0.25);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 6px;
-    margin-top: 6px;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 0.5px;
+    color: #fff; font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px; margin-top: 6px;
+    font-family: 'Courier New', monospace; letter-spacing: 0.5px;
   }
 
   .drawer-nav {
     padding: 12px 12px 20px;
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: flex; flex-direction: column; gap: 4px;
   }
   .drawer-section-label {
-    font-size: 10px;
-    font-weight: 800;
-    color: #bdbdbd;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 10px; font-weight: 800; color: #bdbdbd;
+    text-transform: uppercase; letter-spacing: 1px;
     padding: 14px 14px 6px;
   }
   .drawer-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px;
-    border-radius: 14px;
-    text-decoration: none;
-    color: var(--text-dark);
-    font-size: 15px;
-    font-weight: 600;
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; border-radius: 14px;
+    text-decoration: none; color: var(--text-dark);
+    font-size: 15px; font-weight: 600;
     transition: background 0.2s, transform 0.15s;
   }
   .drawer-item:active {
@@ -194,30 +182,14 @@ HTML_DASHBOARD = (
     transform: scale(0.98);
   }
   .drawer-item-icon {
-    width: 40px; height: 40px;
-    border-radius: 12px;
+    width: 40px; height: 40px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .drawer-item-text {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .drawer-item-text .title {
-    font-size: 15px;
-    font-weight: 700;
-  }
-  .drawer-item-text .desc {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-  .drawer-item-arrow {
-    color: #bdbdbd;
-    flex-shrink: 0;
-  }
+  .drawer-item-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .drawer-item-text .title { font-size: 15px; font-weight: 700; }
+  .drawer-item-text .desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .drawer-item-arrow { color: #bdbdbd; flex-shrink: 0; }
 
   .di-green  { background: var(--green-light);  color: var(--green);  }
   .di-orange { background: var(--orange-light); color: var(--orange); }
@@ -233,28 +205,17 @@ HTML_DASHBOARD = (
     flex-shrink: 0;
   }
   .drawer-logout {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px;
-    border-radius: 14px;
-    background: var(--red-light);
-    color: var(--red);
-    font-size: 15px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    width: 100%;
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; border-radius: 14px;
+    background: var(--red-light); color: var(--red);
+    font-size: 15px; font-weight: 700;
+    border: none; cursor: pointer; width: 100%;
     transition: transform 0.15s, background 0.2s;
     font-family: inherit;
   }
-  .drawer-logout:active {
-    transform: scale(0.98);
-    background: #ffcdd2;
-  }
+  .drawer-logout:active { transform: scale(0.98); background: #ffcdd2; }
   .drawer-logout-icon {
-    width: 40px; height: 40px;
-    border-radius: 12px;
+    width: 40px; height: 40px; border-radius: 12px;
     background: rgba(211, 47, 47, 0.15);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -268,37 +229,24 @@ HTML_DASHBOARD = (
     border: 1.5px solid #ffb74d;
     border-radius: 16px;
     padding: 14px 16px;
-    align-items: center;
-    gap: 12px;
+    align-items: center; gap: 12px;
     animation: slideDown 0.3s ease-out;
   }
   .inactive-banner.show { display: flex; }
   .inactive-banner .icon {
-    width: 40px; height: 40px;
-    border-radius: 12px;
-    background: #ffe0b2;
-    color: #e65100;
+    width: 40px; height: 40px; border-radius: 12px;
+    background: #ffe0b2; color: #e65100;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
   .inactive-banner .text { flex: 1; min-width: 0; }
-  .inactive-banner .title {
-    font-size: 13px; font-weight: 800; color: #e65100;
-    margin-bottom: 2px;
-  }
-  .inactive-banner .desc {
-    font-size: 11px; color: #bf360c;
-  }
+  .inactive-banner .title { font-size: 13px; font-weight: 800; color: #e65100; margin-bottom: 2px; }
+  .inactive-banner .desc { font-size: 11px; color: #bf360c; }
   .inactive-banner .action {
-    background: #e65100;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    flex-shrink: 0;
+    background: #e65100; color: #fff;
+    border: none; padding: 8px 12px;
+    border-radius: 10px; font-size: 11px; font-weight: 700;
+    cursor: pointer; flex-shrink: 0;
   }
   @keyframes slideDown {
     from { opacity: 0; transform: translateY(-8px); }
@@ -307,21 +255,12 @@ HTML_DASHBOARD = (
 
   /* ===== BADGE STATUS ===== */
   .badge-status {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-top: 4px;
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; margin-top: 4px;
   }
-  .badge-status.active {
-    background: var(--green-light);
-    color: var(--green);
-  }
-  .badge-status.inactive {
-    background: #fff3e0;
-    color: #e65100;
-  }
+  .badge-status.active { background: var(--green-light); color: var(--green); }
+  .badge-status.inactive { background: #fff3e0; color: #e65100; }
+  .badge-status.loading { background: #f5f5f5; color: #9e9e9e; }
 
   /* ===== SKELETON ===== */
   .skeleton {
@@ -624,13 +563,22 @@ HTML_DASHBOARD = (
   <header class="topbar">
     <div class="avatar-top" id="userInitial">A</div>
     <div class="logo">Tri<span>Boost</span></div>
-    <button class="menu-burger" onclick="openMenu()" aria-label="Menu">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    </button>
+    <div class="topbar-actions">
+      <button class="icon-btn refresh-btn" id="refreshBtn" onclick="manualRefresh()" aria-label="Rafraîchir">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+      <button class="icon-btn menu-burger" onclick="openMenu()" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
   </header>
 
   <!-- BANNIÈRE INACTIF -->
@@ -657,7 +605,7 @@ HTML_DASHBOARD = (
     </div>
     <div class="profile-info">
       <h3>Bonjour, <span id="userName">...</span></h3>
-      <div class="badge-status inactive" id="statusBadge">⏳ Chargement...</div>
+      <div class="badge-status loading" id="statusBadge">⏳ Chargement...</div>
       <p id="userInfo">TriBoost</p>
     </div>
   </div>
@@ -811,7 +759,6 @@ HTML_DASHBOARD = (
     document.getElementById('userInitial').textContent = initial;
     document.getElementById('userInitial2').textContent = initial;
     document.getElementById('userInfo').textContent = email;
-
     document.getElementById('drawerInitial').textContent = initial;
     document.getElementById('drawerName').textContent = displayName;
     document.getElementById('drawerEmail').textContent = email;
@@ -820,11 +767,15 @@ HTML_DASHBOARD = (
 
   // ===== ÉTAT =====
   let isActivated = false;
+  let isLoadingProfile = false;
 
   // ===== CHARGEMENT DU PROFIL =====
-  async function loadProfile() {
+  async function loadProfile(silent = false) {
+    if (isLoadingProfile) return;
+    isLoadingProfile = true;
+
     try {
-      const res = await fetch('/api/auth/profile/' + userId, {
+      const res = await fetch('/api/auth/profile/' + userId + '?t=' + Date.now(), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
 
@@ -835,14 +786,23 @@ HTML_DASHBOARD = (
       }
 
       if (!res.ok) {
-        showDefaultProfile();
+        if (!silent) showDefaultProfile();
         return;
       }
 
       const data = await res.json();
       const p = data.profile;
 
-      isActivated = p.is_activated || false;
+      // ⚠️ Gestion robuste de is_activated (bool, string, int)
+      const raw = p.is_activated;
+      isActivated = (
+        raw === true ||
+        raw === "true" ||
+        raw === 1 ||
+        raw === "1"
+      );
+
+      console.log('[DASHBOARD] is_activated =', raw, '→ isActivated =', isActivated);
 
       // Solde
       const wb = document.getElementById('walletBalance');
@@ -862,7 +822,9 @@ HTML_DASHBOARD = (
 
     } catch (err) {
       console.error('Erreur profil:', err);
-      showDefaultProfile();
+      if (!silent) showDefaultProfile();
+    } finally {
+      isLoadingProfile = false;
     }
   }
 
@@ -890,7 +852,17 @@ HTML_DASHBOARD = (
     }
   }
 
-  // ===== BOUTONS RETIRER / HISTORIQUE (bloqués si non activé) =====
+  // ===== REFRESH MANUEL =====
+  function manualRefresh() {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    if (navigator.vibrate) navigator.vibrate(10);
+    loadProfile().finally(() => {
+      setTimeout(() => btn.classList.remove('spinning'), 600);
+    });
+  }
+
+  // ===== ACTIONS (bloquées si non activé) =====
   function handleAction(action) {
     if (!isActivated) {
       showInactiveToast();
@@ -906,28 +878,18 @@ HTML_DASHBOARD = (
   // ===== TOAST "COMPTE NON ACTIVÉ" =====
   function showInactiveToast() {
     if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
-
     const old = document.getElementById('inactiveToast');
     if (old) old.remove();
 
     const toast = document.createElement('div');
     toast.id = 'inactiveToast';
     toast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
       background: linear-gradient(135deg, #e65100, #bf360c);
-      color: #fff;
-      padding: 16px 20px;
-      border-radius: 16px;
-      font-size: 13px;
-      font-weight: 600;
+      color: #fff; padding: 16px 20px; border-radius: 16px;
+      font-size: 13px; font-weight: 600;
       box-shadow: 0 10px 30px rgba(230, 81, 0, 0.5);
-      z-index: 10000;
-      max-width: 340px;
-      text-align: center;
-      line-height: 1.5;
+      z-index: 10000; max-width: 340px; text-align: center; line-height: 1.5;
     `;
     toast.innerHTML = `
       <div style="font-size:24px; margin-bottom:6px;">🔒</div>
@@ -936,34 +898,20 @@ HTML_DASHBOARD = (
         Activez votre compte pour 3 600 FCFA
       </div>
       <button onclick="location.href='/activation'" style="
-        margin-top:12px;
-        background:#fff;
-        color:#e65100;
-        border:none;
-        padding:10px 20px;
-        border-radius:10px;
-        font-weight:800;
-        font-size:13px;
-        cursor:pointer;
-        font-family: inherit;
-        width: 100%;
+        margin-top:12px; background:#fff; color:#e65100;
+        border:none; padding:10px 20px; border-radius:10px;
+        font-weight:800; font-size:13px; cursor:pointer;
+        font-family:inherit; width:100%;
       ">Activer maintenant</button>
       <button onclick="this.parentElement.remove()" style="
-        margin-top:6px;
-        background: transparent;
-        color: #fff;
-        border: 1px solid rgba(255,255,255,0.4);
-        padding:8px 20px;
-        border-radius:10px;
-        font-weight:600;
-        font-size:12px;
-        cursor:pointer;
-        font-family: inherit;
-        width: 100%;
+        margin-top:6px; background:transparent; color:#fff;
+        border:1px solid rgba(255,255,255,0.4);
+        padding:8px 20px; border-radius:10px;
+        font-weight:600; font-size:12px; cursor:pointer;
+        font-family:inherit; width:100%;
       ">Plus tard</button>
     `;
     document.body.appendChild(toast);
-
     setTimeout(() => toast?.remove(), 6000);
   }
 
@@ -981,13 +929,31 @@ HTML_DASHBOARD = (
   }
 
   window.addEventListener('popstate', () => {
-    if (document.getElementById('sideDrawer').classList.contains('open')) {
-      closeMenu();
+    if (document.getElementById('sideDrawer').classList.contains('open')) closeMenu();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  // ===== RECHARGEMENT AUTO =====
+  // Recharge quand la page redevient visible (retour sur l'onglet)
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      console.log('[DASHBOARD] Page visible → rechargement profil');
+      loadProfile(true);
     }
   });
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeMenu();
+  // Recharge quand la fenêtre reprend le focus
+  window.addEventListener('focus', function() {
+    loadProfile(true);
+  });
+
+  // Recharge quand on revient via le bouton retour du navigateur
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      loadProfile(true);
+    }
   });
 
   // ===== DÉCONNEXION =====
