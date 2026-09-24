@@ -79,12 +79,20 @@ async def get_checkout_status(checkout_id: str) -> dict:
 
 
 def verify_webhook_signature(payload_body: bytes, signature: str) -> bool:
-    """Vérifie la signature HMAC SHA256 du webhook."""
-    if not settings.LEEKPAY_WEBHOOK_SECRET:
+    """
+    Vérifie la signature HMAC SHA256 du webhook LeekPay.
+
+    ⚠️ Selon la doc LeekPay, la clé utilisée pour la vérification
+    est la CLÉ PUBLIQUE (pk_live_xxx), pas la clé secrète.
+    """
+    if not settings.LEEKPAY_PUBLIC_KEY:
+        return False
+
+    if not signature:
         return False
 
     expected = hmac.new(
-        settings.LEEKPAY_WEBHOOK_SECRET.encode(),
+        settings.LEEKPAY_PUBLIC_KEY.encode(),
         payload_body,
         hashlib.sha256,
     ).hexdigest()
