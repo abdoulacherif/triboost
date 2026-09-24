@@ -83,6 +83,9 @@ async def commissions_page():
     return HTML_COMMISSIONS
 
 
+# ============================================================
+# BOUTIQUE
+# ============================================================
 @router.get("/boutique", response_class=HTMLResponse)
 async def boutique_page():
     return HTML_BOUTIQUE
@@ -93,23 +96,33 @@ async def formation_detail_page(formation_id: str):
     return HTML_FORMATION_DETAIL
 
 
+# ============================================================
+# TÂCHES
+# ============================================================
 @router.get("/tache", response_class=HTMLResponse)
 async def tache_page():
     return HTML_TACHES
 
 
+# ============================================================
+# AFFAIRE
+# ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
     return HTML_AFFAIRE
 
 
+# ============================================================
+# BOOST
+# ============================================================
 @router.get("/boost", response_class=HTMLResponse)
 async def boost_page():
     return HTML_BOOST
 
 
 # ============================================================
-# PLACEHOLDERS (⚠️ PAS /affaire, PAS /boost)
+# PLACEHOLDERS — uniquement les pages pas encore créées
+# ⚠️ NE JAMAIS METTRE /affaire, /boost, /boutique, /tache ICI
 # ============================================================
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
