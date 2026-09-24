@@ -46,7 +46,7 @@ async def register_page():
 
 
 # ============================================================
-# APP PAGES
+# PAGES PRINCIPALES
 # ============================================================
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_page():
@@ -83,6 +83,9 @@ async def commissions_page():
     return HTML_COMMISSIONS
 
 
+# ============================================================
+# BOUTIQUE — Route unique (⚠️ NE PAS METTRE DANS PLACEHOLDERS)
+# ============================================================
 @router.get("/boutique", response_class=HTMLResponse)
 async def boutique_page():
     return HTML_BOUTIQUE
@@ -94,46 +97,86 @@ async def formation_detail_page(formation_id: str):
 
 
 # ============================================================
-# PLACEHOLDERS
+# PLACEHOLDERS (seulement les pages pas encore créées)
 # ============================================================
 @router.get("/affaire", response_class=HTMLResponse)
 async def affaire_page():
-    return make_placeholder("Affaire", ICON_AFFAIRE, "Découvrez les opportunités business.", "green")
+    return make_placeholder(
+        "Affaire",
+        ICON_AFFAIRE,
+        "Découvrez les opportunités business et les partenariats TriBoost.",
+        "green",
+    )
 
 
 @router.get("/tache", response_class=HTMLResponse)
 async def tache_page():
-    return make_placeholder("Tâche", ICON_TACHE, "Accomplissez des missions.", "blue")
+    return make_placeholder(
+        "Tâche",
+        ICON_TACHE,
+        "Accomplissez des missions simples et gagnez des bonus.",
+        "blue",
+    )
 
 
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
-    return make_placeholder("Tourner", ICON_TOURNER, "Faites tourner la roue.", "purple")
+    return make_placeholder(
+        "Tourner",
+        ICON_TOURNER,
+        "Faites tourner la roue et tentez de gagner des récompenses.",
+        "purple",
+    )
 
 
 @router.get("/formation", response_class=HTMLResponse)
 async def formation_page():
-    return make_placeholder("Formation", ICON_FORMATION, "Formations TriBoost.", "orange")
+    return make_placeholder(
+        "Formation",
+        ICON_FORMATION,
+        "Formations TriBoost à venir.",
+        "orange",
+    )
 
 
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_page():
-    return make_placeholder("Shop", ICON_SHOP, "Produits & services TriBoost.", "teal")
+    return make_placeholder(
+        "Shop",
+        ICON_SHOP,
+        "Produits & services TriBoost.",
+        "teal",
+    )
 
 
 @router.get("/boost", response_class=HTMLResponse)
 async def boost_page():
-    return make_placeholder("Boost", ICON_BOOST, "Boostez vos gains.", "gold")
+    return make_placeholder(
+        "Boost",
+        ICON_BOOST,
+        "Boostez vos gains et accélérez votre progression.",
+        "gold",
+    )
 
 
 @router.get("/paiements", response_class=HTMLResponse)
 async def paiements_page():
-    return make_placeholder("Paiements", ICON_PAIEMENTS, "Retraits Mobile Money.", "green")
+    return make_placeholder(
+        "Paiements",
+        ICON_PAIEMENTS,
+        "Retraits Mobile Money et historiques de paiement.",
+        "green",
+    )
 
 
 @router.get("/chat", response_class=HTMLResponse)
 async def chat_page():
-    return make_placeholder("Chat", ICON_CHAT, "Discutez avec votre équipe.", "blue")
+    return make_placeholder(
+        "Chat",
+        ICON_CHAT,
+        "Discutez avec votre équipe et votre réseau.",
+        "blue",
+    )
 
 
 # ============================================================
