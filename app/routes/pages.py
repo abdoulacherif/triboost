@@ -18,6 +18,7 @@ from app.templates.formation_detail import HTML_FORMATION_DETAIL
 from app.templates.historique import HTML_HISTORIQUE
 from app.templates.login import HTML_LOGIN
 from app.templates.marche import HTML_MARCHE
+from app.templates.profil_public import HTML_PROFIL_PUBLIC
 from app.templates.register import HTML_REGISTER
 from app.templates.shared import CSS_COMMUN, HTML_HEAD, JS_COMMUN
 from app.templates.shop import HTML_SHOP
@@ -504,6 +505,14 @@ async def shop_page():
 @router.get("/shop/p/{code}", response_class=HTMLResponse)
 async def shop_product_page(code: str):
     return HTML_SHOP_PRODUCT
+
+
+# ============================================================
+# PROFIL PUBLIC
+# ============================================================
+@router.get("/u/{user_id}", response_class=HTMLResponse)
+async def public_profile_page(user_id: str):
+    return HTML_PROFIL_PUBLIC
 
 
 # ============================================================
