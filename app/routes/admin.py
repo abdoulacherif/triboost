@@ -5,6 +5,9 @@ from app.core.supabase_client import get_supabase, get_supabase_admin
 router = APIRouter()
 
 
+# ============================================================
+# VÉRIFICATION ADMIN
+# ============================================================
 async def _check_admin(request: Request) -> str:
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
@@ -23,6 +26,9 @@ async def _check_admin(request: Request) -> str:
     return user.user.id
 
 
+# ============================================================
+# STATS GLOBALES
+# ============================================================
 @router.get("/stats")
 async def admin_stats(request: Request):
     try:
@@ -31,9 +37,6 @@ async def admin_stats(request: Request):
 
         users = admin.table("profiles").select("id, is_activated, wallet_balance").execute()
         users_list = users.data or []
-        total_users = len(users_list)
-        activated = sum(1 for u in users_list if u.get("is_activated"))
-        total_wallets = sum(float(u.get("wallet_balance", 0) or 0) for u in users_list)
 
         tasks_pending = admin.table("task_submissions").select("id").eq("status", "pending").execute()
         withdrawals_pending = admin.table("withdrawals").select("id").eq("status", "pending").execute()
@@ -42,9 +45,9 @@ async def admin_stats(request: Request):
         return {
             "success": True,
             "stats": {
-                "total_users": total_users,
-                "activated_users": activated,
-                "total_wallets": total_wallets,
+                "total_users": len(users_list),
+                "activated_users": sum(1 for u in users_list if u.get("is_activated")),
+                "total_wallets": sum(float(u.get("wallet_balance", 0) or 0) for u in users_list),
                 "tasks_pending": len(tasks_pending.data or []),
                 "withdrawals_pending": len(withdrawals_pending.data or []),
                 "recharges_pending": len(recharges_pending.data or []),
@@ -53,9 +56,13 @@ async def admin_stats(request: Request):
     except HTTPException:
         raise
     except Exception as e:
+        print(f"[ADMIN] stats: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ============================================================
+# UTILISATEURS
+# ============================================================
 @router.get("/users")
 async def list_users(request: Request, search: str = ""):
     try:
@@ -68,7 +75,7 @@ async def list_users(request: Request, search: str = ""):
 
         users = result.data or []
 
-        # Récupérer les emails
+        # Récupérer les emails via auth admin
         try:
             auth_users = admin.auth.admin.list_users()
             email_map = {}
@@ -81,7 +88,7 @@ async def list_users(request: Request, search: str = ""):
             for u in users:
                 u["email"] = email_map.get(u["id"], "")
         except Exception as e:
-            print(f"[ADMIN] Erreur emails: {e}")
+            print(f"[ADMIN] emails: {e}")
 
         if search:
             s = search.lower()
@@ -95,7 +102,7 @@ async def list_users(request: Request, search: str = ""):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ADMIN] Erreur users: {e}")
+        print(f"[ADMIN] users: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -140,6 +147,9 @@ async def toggle_activation(user_id: str, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ============================================================
+# PARRAINAGE
+# ============================================================
 @router.get("/referrals")
 async def list_referrals(request: Request):
     try:
@@ -167,6 +177,9 @@ async def list_referrals(request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ============================================================
+# SOUMISSIONS DE TÂCHES (à valider)
+# ============================================================
 @router.get("/tasks")
 async def list_tasks_admin(request: Request, status: str = "pending"):
     try:
@@ -220,6 +233,113 @@ async def review_task(submission_id: str, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.delete("/submissions/{submission_id}")
+async def admin_delete_submission(submission_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        admin.table("task_submissions").delete().eq("id", submission_id).execute()
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# GESTION DES TÂCHES (le catalogue)
+# ============================================================
+@router.get("/tasks-all")
+async def admin_list_all_tasks(request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        result = admin.table("tasks").select("*").order("sort_order").order("created_at", desc=True).execute()
+        return {"success": True, "tasks": result.data or []}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/tasks/create")
+async def admin_create_task(request: Request):
+    try:
+        await _check_admin(request)
+        body = await request.json()
+
+        title = (body.get("title") or "").strip()
+        description = (body.get("description") or "").strip()
+        instructions = (body.get("instructions") or "").strip()
+        reward = float(body.get("reward", 0))
+        icon = body.get("icon", "🎯") or "🎯"
+        network_hint = body.get("network_hint", "") or ""
+
+        if not title or reward <= 0:
+            raise HTTPException(status_code=400, detail="Titre et récompense obligatoires")
+
+        admin = get_supabase_admin()
+        result = admin.table("tasks").insert({
+            "title": title,
+            "description": description,
+            "instructions": instructions,
+            "reward": reward,
+            "icon": icon,
+            "network_hint": network_hint,
+            "is_active": True,
+        }).execute()
+
+        return {"success": True, "task": result.data[0] if result.data else None}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/tasks/{task_id}/update")
+async def admin_update_task(task_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        body = await request.json()
+
+        update_data = {}
+        for field in ["title", "description", "instructions", "icon", "network_hint"]:
+            if field in body:
+                update_data[field] = body[field]
+        if "reward" in body:
+            update_data["reward"] = float(body["reward"])
+        if "is_active" in body:
+            update_data["is_active"] = bool(body["is_active"])
+
+        if not update_data:
+            raise HTTPException(status_code=400, detail="Rien à modifier")
+
+        admin = get_supabase_admin()
+        admin.table("tasks").update(update_data).eq("id", task_id).execute()
+
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/tasks/{task_id}")
+async def admin_delete_task(task_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        admin.table("tasks").delete().eq("id", task_id).execute()
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# RETRAITS
+# ============================================================
 @router.get("/withdrawals")
 async def list_withdrawals_admin(request: Request, status: str = "pending"):
     try:
@@ -270,6 +390,22 @@ async def review_withdrawal(withdrawal_id: str, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.delete("/withdrawals/{withdrawal_id}")
+async def admin_delete_withdrawal(withdrawal_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        admin.table("withdrawals").delete().eq("id", withdrawal_id).execute()
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# RECHARGES
+# ============================================================
 @router.get("/recharges")
 async def list_recharges_admin(request: Request, status: str = "pending"):
     try:
@@ -312,138 +448,7 @@ async def confirm_recharge_admin(recharge_id: str, request: Request):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-# ============================================================
-# CRÉER UNE TÂCHE
-# ============================================================
-@router.post("/tasks/create")
-async def admin_create_task(request: Request):
-    try:
-        await _check_admin(request)
-        body = await request.json()
 
-        title = (body.get("title") or "").strip()
-        description = (body.get("description") or "").strip()
-        instructions = (body.get("instructions") or "").strip()
-        reward = float(body.get("reward", 0))
-        icon = body.get("icon", "🎯")
-        network_hint = body.get("network_hint", "")
-
-        if not title or reward <= 0:
-            raise HTTPException(status_code=400, detail="Titre et récompense obligatoires")
-
-        admin = get_supabase_admin()
-        result = admin.table("tasks").insert({
-            "title": title,
-            "description": description,
-            "instructions": instructions,
-            "reward": reward,
-            "icon": icon,
-            "network_hint": network_hint,
-            "is_active": True,
-        }).execute()
-
-        return {"success": True, "task": result.data[0] if result.data else None}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ============================================================
-# MODIFIER UNE TÂCHE
-# ============================================================
-@router.post("/tasks/{task_id}/update")
-async def admin_update_task(task_id: str, request: Request):
-    try:
-        await _check_admin(request)
-        body = await request.json()
-
-        update_data = {}
-        for field in ["title", "description", "instructions", "icon", "network_hint"]:
-            if field in body:
-                update_data[field] = body[field]
-        if "reward" in body:
-            update_data["reward"] = float(body["reward"])
-        if "is_active" in body:
-            update_data["is_active"] = bool(body["is_active"])
-
-        admin = get_supabase_admin()
-        admin.table("tasks").update(update_data).eq("id", task_id).execute()
-
-        return {"success": True}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ============================================================
-# SUPPRIMER UNE TÂCHE
-# ============================================================
-@router.delete("/tasks/{task_id}")
-async def admin_delete_task(task_id: str, request: Request):
-    try:
-        await _check_admin(request)
-        admin = get_supabase_admin()
-        admin.table("tasks").delete().eq("id", task_id).execute()
-        return {"success": True}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ============================================================
-# LISTE TOUTES LES TÂCHES (pas seulement les soumissions)
-# ============================================================
-@router.get("/tasks-all")
-async def admin_list_all_tasks(request: Request):
-    try:
-        await _check_admin(request)
-        admin = get_supabase_admin()
-        result = admin.table("tasks").select("*").order("sort_order").order("created_at", desc=True).execute()
-        return {"success": True, "tasks": result.data or []}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ============================================================
-# SUPPRIMER UNE SOUMISSION
-# ============================================================
-@router.delete("/submissions/{submission_id}")
-async def admin_delete_submission(submission_id: str, request: Request):
-    try:
-        await _check_admin(request)
-        admin = get_supabase_admin()
-        admin.table("task_submissions").delete().eq("id", submission_id).execute()
-        return {"success": True}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ============================================================
-# SUPPRIMER UN RETRAIT
-# ============================================================
-@router.delete("/withdrawals/{withdrawal_id}")
-async def admin_delete_withdrawal(withdrawal_id: str, request: Request):
-    try:
-        await _check_admin(request)
-        admin = get_supabase_admin()
-        admin.table("withdrawals").delete().eq("id", withdrawal_id).execute()
-        return {"success": True}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ============================================================
-# SUPPRIMER UNE RECHARGE
-# ============================================================
 @router.delete("/recharges/{recharge_id}")
 async def admin_delete_recharge(recharge_id: str, request: Request):
     try:
