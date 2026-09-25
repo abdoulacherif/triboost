@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.routes import (
+    admin,
     affaires,
     auth,
     boost,
@@ -27,3 +28,4 @@ app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
 app.include_router(affaires.router, prefix="/api/affaires", tags=["Affaires"])
 app.include_router(boost.router, prefix="/api/boost", tags=["Boost"])
 app.include_router(wheel.router, prefix="/api/wheel", tags=["Wheel"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
