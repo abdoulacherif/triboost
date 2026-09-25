@@ -21,7 +21,7 @@ async def _check_admin(request: Request) -> str:
 
 
 # ============================================================
-# UTILISATEUR DÉTAIL — MODIFIER
+# UTILISATEUR — MODIFIER
 # ============================================================
 @router.post("/user/{user_id}/update")
 async def admin_update_user(user_id: str, request: Request):
@@ -50,17 +50,18 @@ async def admin_update_user(user_id: str, request: Request):
 
 
 # ============================================================
-# MARCHÉ — LISTER / SUPPRIMER / BLOQUER
+# MARCHÉ
 # ============================================================
 @router.get("/market")
 async def admin_list_market(request: Request):
     try:
         await _check_admin(request)
         admin = get_supabase_admin()
-        result = admin.table("marketplace_items").select("*").order("created_at", desc=True).limit(200).execute()
+        result = admin.table("marketplace_items").select(
+            "id, title, description, price, category, city, whatsapp, image_url, is_active, is_banned, user_id, created_at"
+        ).order("created_at", desc=True).limit(50).execute()
         items = result.data or []
 
-        # Noms des vendeurs
         if items:
             uids = list(set(i["user_id"] for i in items))
             users = admin.table("profiles").select("id, full_name").in_("id", uids).execute()
@@ -107,14 +108,16 @@ async def admin_ban_market(item_id: str, request: Request):
 
 
 # ============================================================
-# AFFAIRE — SERVICES DIGITAUX
+# SERVICES DIGITAUX
 # ============================================================
 @router.get("/services")
 async def admin_list_services(request: Request):
     try:
         await _check_admin(request)
         admin = get_supabase_admin()
-        result = admin.table("digital_services").select("*").order("created_at", desc=True).limit(200).execute()
+        result = admin.table("digital_services").select(
+            "id, title, description, category, price, delivery_time, is_active, is_banned, user_id, created_at"
+        ).order("created_at", desc=True).limit(50).execute()
         items = result.data or []
 
         if items:
@@ -163,14 +166,16 @@ async def admin_ban_service(service_id: str, request: Request):
 
 
 # ============================================================
-# BOOST — FRANCHISES
+# FRANCHISES
 # ============================================================
 @router.get("/franchises")
 async def admin_list_franchises(request: Request):
     try:
         await _check_admin(request)
         admin = get_supabase_admin()
-        result = admin.table("franchises").select("*").order("created_at", desc=True).limit(200).execute()
+        result = admin.table("franchises").select(
+            "id, city, quartier, price_paid, is_active, total_earned, user_id, created_at"
+        ).order("created_at", desc=True).limit(50).execute()
         items = result.data or []
 
         if items:
@@ -216,14 +221,16 @@ async def admin_toggle_franchise(franchise_id: str, request: Request):
 
 
 # ============================================================
-# BOUTIQUE — FORMATIONS
+# FORMATIONS
 # ============================================================
 @router.get("/formations")
 async def admin_list_formations(request: Request):
     try:
         await _check_admin(request)
         admin = get_supabase_admin()
-        result = admin.table("formations").select("*").order("created_at", desc=True).limit(200).execute()
+        result = admin.table("formations").select(
+            "id, title, description, category, cover_url, content_url, duration, level, price, is_free, is_published, is_banned, views, created_at"
+        ).order("created_at", desc=True).limit(50).execute()
         return {"success": True, "items": result.data or []}
     except HTTPException:
         raise
@@ -252,7 +259,7 @@ async def admin_create_formation(request: Request):
             "level": body.get("level", "débutant"),
             "price": float(body.get("price", 0)),
             "is_free": bool(body.get("is_free", False)),
-            "is_published": True,
+            "is_published": bool(body.get("is_published", True)),
             "author": body.get("author", "TriBoost"),
         }).execute()
 
@@ -307,14 +314,16 @@ async def admin_delete_formation(formation_id: str, request: Request):
 
 
 # ============================================================
-# FORMATION — PARCOURS
+# PARCOURS
 # ============================================================
 @router.get("/paths")
 async def admin_list_paths(request: Request):
     try:
         await _check_admin(request)
         admin = get_supabase_admin()
-        result = admin.table("paths").select("*").order("sort_order").execute()
+        result = admin.table("paths").select(
+            "id, title, description, icon, color, reward_per_formation, bonus_final, is_active, created_at"
+        ).order("sort_order").limit(50).execute()
         return {"success": True, "items": result.data or []}
     except HTTPException:
         raise
