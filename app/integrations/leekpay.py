@@ -25,6 +25,11 @@ async def create_checkout(
     if not settings.is_leekpay_configured:
         raise HTTPException(status_code=500, detail="LeekPay non configuré")
 
+    url = f"{settings.LEEKPAY_API_URL}/checkout"
+    print(f"[LEEKPAY] POST {url}")
+    print(f"[LEEKPAY] Amount: {amount} {currency}")
+    print(f"[LEEKPAY] Secret key (debut): {settings.LEEKPAY_SECRET_KEY[:15]}...")
+
     payload = {
         "amount": amount,
         "currency": currency,
@@ -41,24 +46,51 @@ async def create_checkout(
     headers = {
         "Authorization": f"Bearer {settings.LEEKPAY_SECRET_KEY}",
         "Content-Type": "application/json",
+        "Accept": "application/json",
     }
 
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{settings.LEEKPAY_API_URL}/checkout",
-            json=payload,
-            headers=headers,
-            timeout=30,
-        )
+    try:
+        async with httpx.AsyncClient(follow_redirects=False, timeout=30) as client:
+            response = await client.post(url, json=payload, headers=headers)
 
-    if response.status_code not in (200, 201):
-        raise HTTPException(
-            status_code=400,
-            detail=f"LeekPay erreur: {response.text}",
-        )
+            print(f"[LEEKPAY] Status: {response.status_code}")
+            print(f"[LEEKPAY] Response (200 char): {response.text[:200]}")
 
-    data = response.json()
-    return data.get("data", {})
+            # Si redirection → mauvais endpoint
+            if response.status_code in (301, 302, 303, 307, 308):
+                location = response.headers.get("location", "?")
+                print(f"[LEEKPAY] REDIRECTION vers: {location}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"LeekPay redirige vers {location}. Vérifie l'URL API.",
+                )
+
+            # Si HTML au lieu de JSON
+            content_type = response.headers.get("content-type", "")
+            if "application/json" not in content_type:
+                print(f"[LEEKPAY] Content-Type: {content_type}")
+                print(f"[LEEKPAY] Body HTML: {response.text[:300]}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"LeekPay renvoie du HTML au lieu de JSON. URL: {url}",
+                )
+
+            if response.status_code not in (200, 201):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"LeekPay erreur {response.status_code}: {response.text[:200]}",
+                )
+
+            data = response.json()
+            return data.get("data", data)
+
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="LeekPay timeout")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[LEEKPAY] Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"LeekPay erreur: {str(e)}")
 
 
 # ============================================================
@@ -69,29 +101,26 @@ async def get_checkout_status(checkout_id: str) -> dict:
     if not settings.is_leekpay_configured:
         raise HTTPException(status_code=500, detail="LeekPay non configuré")
 
-    headers = {"Authorization": f"Bearer {settings.LEEKPAY_SECRET_KEY}"}
+    url = f"{settings.LEEKPAY_API_URL}/checkout/{checkout_id}"
+    headers = {
+        "Authorization": f"Bearer {settings.LEEKPAY_SECRET_KEY}",
+        "Accept": "application/json",
+    }
 
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{settings.LEEKPAY_API_URL}/checkout/{checkout_id}",
-            headers=headers,
-            timeout=15,
-        )
+    async with httpx.AsyncClient(follow_redirects=False, timeout=15) as client:
+        response = await client.get(url, headers=headers)
 
-    if response.status_code != 200:
-        raise HTTPException(status_code=400, detail="Erreur LeekPay")
+        if response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Erreur LeekPay")
 
-    return response.json().get("data", {})
+        return response.json().get("data", {})
 
 
 # ============================================================
 # VÉRIFIER LA SIGNATURE DU WEBHOOK
 # ============================================================
 def verify_webhook_signature(payload_body: bytes, signature: str) -> bool:
-    """
-    Vérifie la signature HMAC SHA256 du webhook LeekPay.
-    ⚠️ La clé utilisée est la CLÉ PUBLIQUE (pk_live_xxx).
-    """
+    """Vérifie la signature HMAC SHA256 du webhook LeekPay."""
     if not settings.LEEKPAY_PUBLIC_KEY:
         return False
 
