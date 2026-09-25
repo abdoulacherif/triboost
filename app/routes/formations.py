@@ -191,3 +191,150 @@ async def my_purchases(request: Request):
     except Exception as e:
         print(f"[FORMATIONS] Erreur purchases: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+
+# ============================================================
+# PARCOURS
+# ============================================================
+@router.get("/paths")
+async def list_paths(request: Request):
+    """Liste tous les parcours actifs + progression utilisateur."""
+    try:
+        admin = get_supabase_admin()
+        paths_result = admin.table("paths").select("*").eq("is_active", True).order("sort_order").execute()
+        paths = paths_result.data or []
+
+        # Récupérer les formations de chaque parcours
+        for p in paths:
+            pf = admin.table("path_formations").select("formation_id, sort_order, formations(id, title, cover_url, category, duration, is_free, price)").eq("path_id", p["id"]).order("sort_order").execute()
+            p["formations"] = [item.get("formations") for item in (pf.data or []) if item.get("formations")]
+            p["total_formations"] = len(p["formations"])
+
+        # Progression utilisateur
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.replace("Bearer ", "")
+            try:
+                user = get_supabase().auth.get_user(token)
+                if user.user:
+                    prog = admin.table("path_progress").select("path_id, formation_id").eq("user_id", user.user.id).execute()
+                    progress_map = {}
+                    for item in (prog.data or []):
+                        pid = item["path_id"]
+                        if pid not in progress_map:
+                            progress_map[pid] = []
+                        progress_map[pid].append(item["formation_id"])
+
+                    for p in paths:
+                        done_ids = progress_map.get(p["id"], [])
+                        p["completed_ids"] = done_ids
+                        p["completed_count"] = len(done_ids)
+                        p["is_completed"] = p["completed_count"] >= p["total_formations"] and p["total_formations"] > 0
+            except Exception:
+                pass
+
+        return {"success": True, "paths": paths}
+
+    except Exception as e:
+        print(f"[FORMATIONS] Erreur paths: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/paths/{path_id}")
+async def get_path(path_id: str, request: Request):
+    """Détail d'un parcours + progression utilisateur."""
+    try:
+        admin = get_supabase_admin()
+        path = admin.table("paths").select("*").eq("id", path_id).eq("is_active", True).execute()
+        if not path.data or len(path.data) == 0:
+            raise HTTPException(status_code=404, detail="Parcours introuvable")
+
+        p = path.data[0]
+        pf = admin.table("path_formations").select("formation_id, sort_order, formations(*)").eq("path_id", path_id).order("sort_order").execute()
+        p["formations"] = [item.get("formations") for item in (pf.data or []) if item.get("formations")]
+
+        # Progression
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.replace("Bearer ", "")
+            try:
+                user = get_supabase().auth.get_user(token)
+                if user.user:
+                    prog = admin.table("path_progress").select("formation_id").eq("user_id", user.user.id).eq("path_id", path_id).execute()
+                    done_ids = [item["formation_id"] for item in (prog.data or [])]
+                    p["completed_ids"] = done_ids
+                    p["completed_count"] = len(done_ids)
+                    p["is_completed"] = p["completed_count"] >= len(p["formations"]) and len(p["formations"]) > 0
+            except Exception:
+                pass
+
+        return {"success": True, "path": p}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/complete/{formation_id}")
+async def complete_formation(formation_id: str, request: Request):
+    """Marque une formation comme terminée et crédite la récompense."""
+    try:
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Token manquant")
+
+        token = auth_header.replace("Bearer ", "")
+        user = get_supabase().auth.get_user(token)
+        if not user.user:
+            raise HTTPException(status_code=401, detail="Token invalide")
+
+        user_id = user.user.id
+        admin = get_supabase_admin()
+
+        # Vérifier activation
+        profile = admin.table("profiles").select("is_activated").eq("id", user_id).execute()
+        raw = profile.data[0].get("is_activated") if profile.data else False
+        is_activated = raw is True or raw == "true" or raw == 1 or raw == "1"
+        if not is_activated:
+            raise HTTPException(status_code=403, detail="Compte non activé")
+
+        result = admin.rpc("complete_formation", {
+            "p_user_id": user_id,
+            "p_formation_id": formation_id,
+        }).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=400, detail="Erreur")
+
+        return {"success": True, "result": result.data}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# CERTIFICATS
+# ============================================================
+@router.get("/certificates")
+async def my_certificates(request: Request):
+    """Liste mes certificats."""
+    try:
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Token manquant")
+
+        token = auth_header.replace("Bearer ", "")
+        user = get_supabase().auth.get_user(token)
+        if not user.user:
+            raise HTTPException(status_code=401, detail="Token invalide")
+
+        admin = get_supabase_admin()
+        result = admin.table("certificates").select("*").eq("user_id", user.user.id).order("created_at", desc=True).execute()
+        return {"success": True, "certificates": result.data or []}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
