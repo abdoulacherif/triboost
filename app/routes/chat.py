@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 # ============================================================
-# LISTE DES FILLEULS (pour choisir à qui envoyer)
+# LISTE DES CONTACTS (filleuls + parrain)
 # ============================================================
 @router.get("/contacts")
 async def get_contacts(request: Request):
@@ -21,15 +21,29 @@ async def get_contacts(request: Request):
             raise HTTPException(status_code=401, detail="Token invalide")
 
         admin = get_supabase_admin()
+        contacts = []
 
-        # Récupérer tous mes filleuls directs
-        result = admin.table("profiles").select(
+        # 1. Mes filleuls directs (N1)
+        filleuls = admin.table("profiles").select(
             "id, full_name, phone, is_activated, referral_code"
         ).eq("referred_by", user.user.id).order("created_at", desc=True).execute()
+        for c in (filleuls.data or []):
+            c["relation"] = "filleul"
+            contacts.append(c)
 
-        contacts = result.data or []
+        # 2. Mon parrain
+        me = admin.table("profiles").select("referred_by").eq("id", user.user.id).execute()
+        if me.data and me.data[0].get("referred_by"):
+            referrer_id = me.data[0]["referred_by"]
+            referrer = admin.table("profiles").select(
+                "id, full_name, phone, is_activated, referral_code"
+            ).eq("id", referrer_id).execute()
+            if referrer.data:
+                r = referrer.data[0]
+                r["relation"] = "parrain"
+                contacts.append(r)
 
-        # Ajouter les infos de dernier message
+        # 3. Ajouter les infos de dernier message
         for c in contacts:
             try:
                 last = admin.table("chat_messages").select(
@@ -40,8 +54,12 @@ async def get_contacts(request: Request):
                 if last.data and len(last.data) > 0:
                     c["last_message"] = last.data[0]["message"]
                     c["last_date"] = last.data[0]["created_at"]
+                    c["last_sender_is_me"] = last.data[0]["sender_id"] == user.user.id
             except Exception:
                 pass
+
+        # Trier : ceux avec messages récents en premier
+        contacts.sort(key=lambda x: x.get("last_date", ""), reverse=True)
 
         return {"success": True, "contacts": contacts}
     except HTTPException:
@@ -121,15 +139,21 @@ async def send_message(request: Request):
 
         admin = get_supabase_admin()
 
-        # Vérifier que le destinataire est bien un filleul
-        check = admin.table("profiles").select("id, referred_by").eq("id", receiver_id).execute()
-        if not check.data:
+        # Vérifier que le destinataire est bien un filleul OU mon parrain
+        dest = admin.table("profiles").select("id, referred_by").eq("id", receiver_id).execute()
+        if not dest.data:
             raise HTTPException(status_code=404, detail="Contact introuvable")
 
-        is_my_filleul = check.data[0].get("referred_by") == user.user.id
+        dest_referred_by = dest.data[0].get("referred_by")
 
-        if not is_my_filleul:
-            raise HTTPException(status_code=403, detail="Tu ne peux envoyer qu'à tes filleuls")
+        me = admin.table("profiles").select("referred_by").eq("id", user.user.id).execute()
+        my_referrer = me.data[0].get("referred_by") if me.data else None
+
+        is_my_filleul = dest_referred_by == user.user.id
+        is_my_referrer = receiver_id == my_referrer
+
+        if not (is_my_filleul or is_my_referrer):
+            raise HTTPException(status_code=403, detail="Tu ne peux envoyer qu'à ton parrain ou tes filleuls")
 
         result = admin.table("chat_messages").insert({
             "sender_id": user.user.id,
