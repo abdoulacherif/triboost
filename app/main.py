@@ -11,18 +11,12 @@ from app.routes import (
     pages,
     payments,
     tasks,
+    wheel,
 )
 
 app = FastAPI(title="TriBoost", version="1.0.0")
 
-# ============================================================
-# PAGES HTML
-# ============================================================
 app.include_router(pages.router, tags=["Pages"])
-
-# ============================================================
-# API
-# ============================================================
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(marketplace.router, prefix="/api/marketplace", tags=["Marketplace"])
 app.include_router(network.router, prefix="/api/network", tags=["Network"])
@@ -32,3 +26,4 @@ app.include_router(formations.router, prefix="/api/formations", tags=["Formation
 app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
 app.include_router(affaires.router, prefix="/api/affaires", tags=["Affaires"])
 app.include_router(boost.router, prefix="/api/boost", tags=["Boost"])
+app.include_router(wheel.router, prefix="/api/wheel", tags=["Wheel"])
