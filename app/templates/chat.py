@@ -17,11 +17,9 @@ HTML_CHAT = (
   .tab { flex: 1; background: #fff; border: 1.5px solid var(--border); color: var(--text-muted); padding: 12px 8px; border-radius: 14px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
   .tab .icon { font-size: 20px; }
   .tab.active { background: var(--green); color: #fff; border-color: var(--green); }
-  .tab .badge-count { position: absolute; top: 6px; right: 8px; background: #d32f2f; color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 8px; font-weight: 800; }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* CHAT */
   .chat-container { display: flex; flex-direction: column; height: calc(100vh - 220px); min-height: 400px; }
   .contacts-list { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
   .contact-item { background: #fff; border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: transform 0.15s; }
@@ -33,7 +31,6 @@ HTML_CHAT = (
   .contact-last { font-size: 12px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .contact-badge { background: var(--green-light); color: var(--green); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; }
 
-  /* CONVERSATION */
   .conv-header { padding: 12px 16px; background: #fff; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
   .conv-back { width: 36px; height: 36px; border-radius: 50%; background: var(--green-light); color: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .conv-info { flex: 1; }
@@ -57,7 +54,6 @@ HTML_CHAT = (
   .empty-state h3 { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
   .empty-state p { font-size: 12px; line-height: 1.5; }
 
-  /* SUPPORT */
   .support-container { padding: 0 16px; }
   .btn-new-ticket { width: 100%; background: linear-gradient(135deg, var(--green), var(--green-dark)); color: #fff; border: none; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; font-family: inherit; cursor: pointer; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(46,125,50,0.3); }
 
@@ -74,7 +70,6 @@ HTML_CHAT = (
   .ticket-message { font-size: 12px; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .ticket-date { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
 
-  /* Modal */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); z-index: 999; display: none; align-items: flex-end; justify-content: center; }
   .modal-overlay.open { display: flex; }
   .modal-content { background: #fff; border-radius: 20px 20px 0 0; padding: 20px 20px calc(20px + var(--safe-bottom)); max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease; }
@@ -104,7 +99,6 @@ HTML_CHAT = (
     <button class="tab" data-tab="support"><span class="icon">🎫</span>Support</button>
   </div>
 
-  <!-- MESSAGES -->
   <div class="tab-content active" id="tab-messages">
     <div class="chat-container" id="chatContainer">
       <div class="contacts-list" id="contactsList">
@@ -113,7 +107,6 @@ HTML_CHAT = (
     </div>
   </div>
 
-  <!-- SUPPORT -->
   <div class="tab-content" id="tab-support">
     <div class="support-container">
       <button class="btn-new-ticket" onclick="openTicketModal()">🎫 Nouveau ticket</button>
@@ -126,7 +119,6 @@ HTML_CHAT = (
   <div style="height: 20px;"></div>
 </div>
 
-<!-- MODAL NOUVEAU TICKET -->
 <div class="modal-overlay" id="ticketModal">
   <div class="modal-content">
     <div class="modal-title">🎫 Contacter le support</div>
@@ -145,7 +137,6 @@ HTML_CHAT = (
   </div>
 </div>
 
-<!-- MODAL DÉTAIL TICKET -->
 <div class="modal-overlay" id="ticketDetailModal">
   <div class="modal-content">
     <div class="modal-title" id="detailSubject">Ticket</div>
@@ -191,7 +182,7 @@ HTML_CHAT = (
     return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
   }
 
-  // ===== CONTACTS (filleuls) =====
+  // ===== CONTACTS (filleuls + parrain) =====
   async function loadContacts() {
     const list = document.getElementById('contactsList');
     try {
@@ -200,21 +191,24 @@ HTML_CHAT = (
       const contacts = data.contacts || [];
 
       if (contacts.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="icon">👥</div><h3>Aucun filleul</h3><p>Invitez des personnes pour pouvoir leur envoyer des messages.</p></div>';
+        list.innerHTML = '<div class="empty-state"><div class="icon">👥</div><h3>Aucun contact</h3><p>Invitez des personnes ou attendez que votre parrain vous contacte.</p></div>';
         return;
       }
 
       list.innerHTML = contacts.map(c => {
         const initial = (c.full_name || 'U').charAt(0).toUpperCase();
-        const last = c.last_message ? escapeHtml(c.last_message) : 'Démarrer la conversation';
+        const isFilleul = c.relation === 'filleul';
+        const last = c.last_message ? escapeHtml(c.last_message) : (isFilleul ? 'Démarrer la conversation' : 'Contacter mon parrain');
         const date = c.last_date ? ' · ' + timeAgo(c.last_date) : '';
-        return '<div class="contact-item" onclick="openConversation(\\'' + c.id + '\\', \\'' + (c.full_name || '').replace(/'/g, '') + '\\')">' +
+        const prefix = c.last_message && !c.last_sender_is_me ? '📩 ' : '';
+        const badge = isFilleul ? '<span class="contact-badge">Filleul</span>' : '<span class="contact-badge" style="background:#fff3e0;color:#e65100;">Parrain</span>';
+        return '<div class="contact-item" onclick="openConversation(\\'' + c.id + '\\', \\'' + (c.full_name || '').replace(/'/g, '') + '\\', \\'' + c.relation + '\\')">' +
           '<div class="contact-avatar">' + initial + (c.is_activated ? '<div class="online"></div>' : '') + '</div>' +
           '<div class="contact-info">' +
           '<div class="contact-name">' + escapeHtml(c.full_name || 'Sans nom') + '</div>' +
-          '<div class="contact-last">' + last + date + '</div>' +
+          '<div class="contact-last">' + prefix + last + date + '</div>' +
           '</div>' +
-          '<span class="contact-badge">' + (c.is_activated ? '✓' : 'En attente') + '</span>' +
+          badge +
           '</div>';
       }).join('');
     } catch (e) {
@@ -223,9 +217,11 @@ HTML_CHAT = (
   }
 
   // ===== CONVERSATION =====
-  async function openConversation(contactId, contactName) {
+  async function openConversation(contactId, contactName, relation) {
     currentContactId = contactId;
     currentContactName = contactName;
+
+    const relLabel = relation === 'parrain' ? 'Mon parrain' : 'Filleul direct';
 
     const container = document.getElementById('chatContainer');
     container.innerHTML = `
@@ -233,7 +229,7 @@ HTML_CHAT = (
         <button class="conv-back" onclick="closeConversation()">←</button>
         <div class="conv-info">
           <div class="conv-name">${escapeHtml(contactName)}</div>
-          <div class="conv-sub">Filleul direct</div>
+          <div class="conv-sub">${relLabel}</div>
         </div>
       </div>
       <div class="messages-area" id="messagesArea">
@@ -356,7 +352,6 @@ HTML_CHAT = (
     }
   }
 
-  let ticketsCache = [];
   async function openTicket(ticketId) {
     try {
       const res = await fetch('/api/chat/support/tickets', { headers: headers() });
