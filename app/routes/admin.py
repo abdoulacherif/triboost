@@ -1,0 +1,337 @@
+from fastapi import APIRouter, HTTPException, Request
+
+from app.core.supabase_client import get_supabase, get_supabase_admin
+
+router = APIRouter()
+
+
+async def _check_admin(request: Request) -> str:
+    """Vérifie que l'utilisateur connecté est admin. Retourne son user_id."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+
+    token = auth_header.replace("Bearer ", "")
+    user = get_supabase().auth.get_user(token)
+    if not user.user:
+        raise HTTPException(status_code=401, detail="Token invalide")
+
+    admin = get_supabase_admin()
+    check = admin.table("profiles").select("is_admin").eq("id", user.user.id).execute()
+    if not check.data or not check.data[0].get("is_admin"):
+        raise HTTPException(status_code=403, detail="Accès réservé aux admins")
+
+    return user.user.id
+
+
+# ============================================================
+# STATS GLOBALES
+# ============================================================
+@router.get("/stats")
+async def admin_stats(request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+
+        # Compter tout
+        users = admin.table("profiles").select("id, is_activated, wallet_balance", count="exact").execute()
+        total_users = users.count or len(users.data or [])
+        activated = sum(1 for u in (users.data or []) if u.get("is_activated"))
+        total_wallets = sum(float(u.get("wallet_balance", 0)) for u in (users.data or []))
+
+        tasks_pending = admin.table("task_submissions").select("id", count="exact").eq("status", "pending").execute()
+        withdrawals_pending = admin.table("withdrawals").select("id", count="exact").eq("status", "pending").execute()
+        recharges_pending = admin.table("recharges").select("id", count="exact").eq("status", "pending").execute()
+
+        return {
+            "success": True,
+            "stats": {
+                "total_users": total_users,
+                "activated_users": activated,
+                "total_wallets": total_wallets,
+                "tasks_pending": tasks_pending.count or 0,
+                "withdrawals_pending": withdrawals_pending.count or 0,
+                "recharges_pending": recharges_pending.count or 0,
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# UTILISATEURS
+# ============================================================
+@router.get("/users")
+async def list_users(request: Request, search: str = ""):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+
+        q = admin.table("profiles").select(
+            "id, full_name, phone, country, referral_code, referred_by, is_activated, is_admin, is_banned, wallet_balance, total_earned, created_at"
+        ).order("created_at", desc=True).limit(200)
+
+        result = q.execute()
+        users = result.data or []
+
+        # Récupérer les emails
+        try:
+            auth_users = admin.auth.admin.list_users()
+            email_map = {}
+            for u in (auth_users.users if hasattr(auth_users, "users") else []):
+                email_map[str(u.id)] = u.email
+            for u in users:
+                u["email"] = email_map.get(u["id"], "")
+        except Exception:
+            pass
+
+        # Filtrer par recherche
+        if search:
+            s = search.lower()
+            users = [u for u in users if
+                     s in (u.get("full_name", "") or "").lower()
+                     or s in (u.get("email", "") or "").lower()
+                     or s in (u.get("phone", "") or "").lower()
+                     or s in (u.get("referral_code", "") or "").lower()]
+
+        return {"success": True, "users": users}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ADMIN] Erreur users: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/users/{user_id}/balance")
+async def update_balance(user_id: str, request: Request):
+    try:
+        admin_id = await _check_admin(request)
+        body = await request.json()
+        new_balance = float(body.get("balance", 0))
+
+        admin = get_supabase_admin()
+        current = admin.table("profiles").select("wallet_balance").eq("id", user_id).execute()
+        old_balance = float(current.data[0].get("wallet_balance", 0)) if current.data else 0
+
+        admin.rpc("admin_update_balance", {
+            "p_admin_id": admin_id,
+            "p_user_id": user_id,
+            "p_amount": old_balance,
+            "p_new_balance": new_balance,
+        }).execute()
+
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/users/{user_id}/toggle-activation")
+async def toggle_activation(user_id: str, request: Request):
+    try:
+        admin_id = await _check_admin(request)
+        admin = get_supabase_admin()
+        result = admin.rpc("admin_toggle_activation", {
+            "p_admin_id": admin_id,
+            "p_user_id": user_id,
+        }).execute()
+        return {"success": True, "result": result.data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# PARRAINAGE
+# ============================================================
+@router.get("/referrals")
+async def list_referrals(request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+
+        # Tous les utilisateurs
+        users = admin.table("profiles").select(
+            "id, full_name, referral_code, referred_by, is_activated, created_at"
+        ).execute()
+        users_list = users.data or []
+        users_map = {u["id"]: u for u in users_list}
+
+        # Construire l'arbre
+        tree = []
+        for u in users_list:
+            referrer = users_map.get(u.get("referred_by")) if u.get("referred_by") else None
+            tree.append({
+                "user": u,
+                "referrer": referrer,
+            })
+
+        # Compter filleuls par parrain
+        for u in users_list:
+            u["filleuls_directs"] = sum(1 for x in users_list if x.get("referred_by") == u["id"])
+
+        return {"success": True, "referrals": tree}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# TÂCHES À VALIDER
+# ============================================================
+@router.get("/tasks")
+async def list_tasks_admin(request: Request, status: str = "pending"):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+
+        q = admin.table("task_submissions").select(
+            "id, user_id, task_id, network, proof_url, comment, status, reward, admin_note, created_at, tasks(title, icon)"
+        ).order("created_at", desc=True).limit(100)
+
+        if status and status != "all":
+            q = q.eq("status", status)
+
+        result = q.execute()
+        items = result.data or []
+
+        # Ajouter les noms
+        if items:
+            user_ids = list(set(i["user_id"] for i in items))
+            users = admin.table("profiles").select("id, full_name").in_("id", user_ids).execute()
+            users_map = {u["id"]: u.get("full_name", "") for u in (users.data or [])}
+            for i in items:
+                i["user_name"] = users_map.get(i["user_id"], "")
+
+        return {"success": True, "tasks": items}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/tasks/{submission_id}/review")
+async def review_task(submission_id: str, request: Request):
+    try:
+        admin_id = await _check_admin(request)
+        body = await request.json()
+        status = body.get("status")
+        note = body.get("note", "")
+
+        admin = get_supabase_admin()
+        result = admin.rpc("admin_review_task", {
+            "p_admin_id": admin_id,
+            "p_submission_id": submission_id,
+            "p_status": status,
+            "p_note": note,
+        }).execute()
+
+        return {"success": True, "result": result.data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# RETRAITS À VALIDER
+# ============================================================
+@router.get("/withdrawals")
+async def list_withdrawals_admin(request: Request, status: str = "pending"):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+
+        q = admin.table("withdrawals").select("*").order("created_at", desc=True).limit(100)
+        if status and status != "all":
+            q = q.eq("status", status)
+
+        result = q.execute()
+        items = result.data or []
+
+        if items:
+            user_ids = list(set(i["user_id"] for i in items))
+            users = admin.table("profiles").select("id, full_name").in_("id", user_ids).execute()
+            users_map = {u["id"]: u.get("full_name", "") for u in (users.data or [])}
+            for i in items:
+                i["user_name"] = users_map.get(i["user_id"], "")
+
+        return {"success": True, "withdrawals": items}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/withdrawals/{withdrawal_id}/review")
+async def review_withdrawal(withdrawal_id: str, request: Request):
+    try:
+        admin_id = await _check_admin(request)
+        body = await request.json()
+        status = body.get("status")
+        note = body.get("note", "")
+
+        admin = get_supabase_admin()
+        result = admin.rpc("admin_review_withdrawal", {
+            "p_admin_id": admin_id,
+            "p_withdrawal_id": withdrawal_id,
+            "p_status": status,
+            "p_note": note,
+        }).execute()
+
+        return {"success": True, "result": result.data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# RECHARGES
+# ============================================================
+@router.get("/recharges")
+async def list_recharges_admin(request: Request, status: str = "pending"):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+
+        q = admin.table("recharges").select("*").order("created_at", desc=True).limit(100)
+        if status and status != "all":
+            q = q.eq("status", status)
+
+        result = q.execute()
+        items = result.data or []
+
+        if items:
+            user_ids = list(set(i["user_id"] for i in items))
+            users = admin.table("profiles").select("id, full_name").in_("id", user_ids).execute()
+            users_map = {u["id"]: u.get("full_name", "") for u in (users.data or [])}
+            for i in items:
+                i["user_name"] = users_map.get(i["user_id"], "")
+
+        return {"success": True, "recharges": items}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/recharges/{recharge_id}/confirm")
+async def confirm_recharge_admin(recharge_id: str, request: Request):
+    try:
+        admin_id = await _check_admin(request)
+        admin = get_supabase_admin()
+        result = admin.rpc("admin_confirm_recharge", {
+            "p_admin_id": admin_id,
+            "p_recharge_id": recharge_id,
+        }).execute()
+        return {"success": True, "result": result.data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
