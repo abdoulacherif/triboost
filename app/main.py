@@ -6,6 +6,7 @@ from app.routes import (
     affaires,
     auth,
     boost,
+    chat,
     formations,
     history,
     marketplace,
@@ -34,3 +35,4 @@ app.include_router(boost.router, prefix="/api/boost", tags=["Boost"])
 app.include_router(wheel.router, prefix="/api/wheel", tags=["Wheel"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(admin_content.router, prefix="/api/admin/content", tags=["AdminContent"])
+app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
