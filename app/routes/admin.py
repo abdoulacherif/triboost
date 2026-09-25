@@ -6,7 +6,6 @@ router = APIRouter()
 
 
 async def _check_admin(request: Request) -> str:
-    """Vérifie que l'utilisateur connecté est admin. Retourne son user_id."""
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Token manquant")
@@ -24,24 +23,21 @@ async def _check_admin(request: Request) -> str:
     return user.user.id
 
 
-# ============================================================
-# STATS GLOBALES
-# ============================================================
 @router.get("/stats")
 async def admin_stats(request: Request):
     try:
         await _check_admin(request)
         admin = get_supabase_admin()
 
-        # Compter tout
-        users = admin.table("profiles").select("id, is_activated, wallet_balance", count="exact").execute()
-        total_users = users.count or len(users.data or [])
-        activated = sum(1 for u in (users.data or []) if u.get("is_activated"))
-        total_wallets = sum(float(u.get("wallet_balance", 0)) for u in (users.data or []))
+        users = admin.table("profiles").select("id, is_activated, wallet_balance").execute()
+        users_list = users.data or []
+        total_users = len(users_list)
+        activated = sum(1 for u in users_list if u.get("is_activated"))
+        total_wallets = sum(float(u.get("wallet_balance", 0) or 0) for u in users_list)
 
-        tasks_pending = admin.table("task_submissions").select("id", count="exact").eq("status", "pending").execute()
-        withdrawals_pending = admin.table("withdrawals").select("id", count="exact").eq("status", "pending").execute()
-        recharges_pending = admin.table("recharges").select("id", count="exact").eq("status", "pending").execute()
+        tasks_pending = admin.table("task_submissions").select("id").eq("status", "pending").execute()
+        withdrawals_pending = admin.table("withdrawals").select("id").eq("status", "pending").execute()
+        recharges_pending = admin.table("recharges").select("id").eq("status", "pending").execute()
 
         return {
             "success": True,
@@ -49,9 +45,9 @@ async def admin_stats(request: Request):
                 "total_users": total_users,
                 "activated_users": activated,
                 "total_wallets": total_wallets,
-                "tasks_pending": tasks_pending.count or 0,
-                "withdrawals_pending": withdrawals_pending.count or 0,
-                "recharges_pending": recharges_pending.count or 0,
+                "tasks_pending": len(tasks_pending.data or []),
+                "withdrawals_pending": len(withdrawals_pending.data or []),
+                "recharges_pending": len(recharges_pending.data or []),
             }
         }
     except HTTPException:
@@ -60,34 +56,33 @@ async def admin_stats(request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ============================================================
-# UTILISATEURS
-# ============================================================
 @router.get("/users")
 async def list_users(request: Request, search: str = ""):
     try:
         await _check_admin(request)
         admin = get_supabase_admin()
 
-        q = admin.table("profiles").select(
+        result = admin.table("profiles").select(
             "id, full_name, phone, country, referral_code, referred_by, is_activated, is_admin, is_banned, wallet_balance, total_earned, created_at"
-        ).order("created_at", desc=True).limit(200)
+        ).order("created_at", desc=True).limit(200).execute()
 
-        result = q.execute()
         users = result.data or []
 
         # Récupérer les emails
         try:
             auth_users = admin.auth.admin.list_users()
             email_map = {}
-            for u in (auth_users.users if hasattr(auth_users, "users") else []):
-                email_map[str(u.id)] = u.email
+            if hasattr(auth_users, "users"):
+                for u in auth_users.users:
+                    email_map[str(u.id)] = u.email
+            elif isinstance(auth_users, list):
+                for u in auth_users:
+                    email_map[str(u.id)] = u.email
             for u in users:
                 u["email"] = email_map.get(u["id"], "")
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[ADMIN] Erreur emails: {e}")
 
-        # Filtrer par recherche
         if search:
             s = search.lower()
             users = [u for u in users if
@@ -113,7 +108,7 @@ async def update_balance(user_id: str, request: Request):
 
         admin = get_supabase_admin()
         current = admin.table("profiles").select("wallet_balance").eq("id", user_id).execute()
-        old_balance = float(current.data[0].get("wallet_balance", 0)) if current.data else 0
+        old_balance = float(current.data[0].get("wallet_balance", 0) or 0) if current.data else 0
 
         admin.rpc("admin_update_balance", {
             "p_admin_id": admin_id,
@@ -145,32 +140,23 @@ async def toggle_activation(user_id: str, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ============================================================
-# PARRAINAGE
-# ============================================================
 @router.get("/referrals")
 async def list_referrals(request: Request):
     try:
         await _check_admin(request)
         admin = get_supabase_admin()
 
-        # Tous les utilisateurs
         users = admin.table("profiles").select(
             "id, full_name, referral_code, referred_by, is_activated, created_at"
         ).execute()
         users_list = users.data or []
         users_map = {u["id"]: u for u in users_list}
 
-        # Construire l'arbre
         tree = []
         for u in users_list:
             referrer = users_map.get(u.get("referred_by")) if u.get("referred_by") else None
-            tree.append({
-                "user": u,
-                "referrer": referrer,
-            })
+            tree.append({"user": u, "referrer": referrer})
 
-        # Compter filleuls par parrain
         for u in users_list:
             u["filleuls_directs"] = sum(1 for x in users_list if x.get("referred_by") == u["id"])
 
@@ -181,9 +167,6 @@ async def list_referrals(request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ============================================================
-# TÂCHES À VALIDER
-# ============================================================
 @router.get("/tasks")
 async def list_tasks_admin(request: Request, status: str = "pending"):
     try:
@@ -200,7 +183,6 @@ async def list_tasks_admin(request: Request, status: str = "pending"):
         result = q.execute()
         items = result.data or []
 
-        # Ajouter les noms
         if items:
             user_ids = list(set(i["user_id"] for i in items))
             users = admin.table("profiles").select("id, full_name").in_("id", user_ids).execute()
@@ -238,9 +220,6 @@ async def review_task(submission_id: str, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ============================================================
-# RETRAITS À VALIDER
-# ============================================================
 @router.get("/withdrawals")
 async def list_withdrawals_admin(request: Request, status: str = "pending"):
     try:
@@ -291,9 +270,6 @@ async def review_withdrawal(withdrawal_id: str, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ============================================================
-# RECHARGES
-# ============================================================
 @router.get("/recharges")
 async def list_recharges_admin(request: Request, status: str = "pending"):
     try:
