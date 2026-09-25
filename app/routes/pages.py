@@ -17,12 +17,12 @@ from app.templates.marche import HTML_MARCHE
 from app.templates.placeholder import (
     ICON_CHAT,
     ICON_SHOP,
-    ICON_TOURNER,
     make_placeholder,
 )
 from app.templates.register import HTML_REGISTER
 from app.templates.shared import CSS_COMMUN, HTML_HEAD, JS_COMMUN
 from app.templates.taches import HTML_TACHES
+from app.templates.tourner import HTML_TOURNER
 
 router = APIRouter()
 
@@ -482,14 +482,14 @@ async def formation_page():
     return HTML_FORMATION
 
 
-# ============================================================
-# PLACEHOLDERS
-# ============================================================
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
-    return make_placeholder("Tourner", ICON_TOURNER, "Roue de la chance.", "purple")
+    return HTML_TOURNER
 
 
+# ============================================================
+# PLACEHOLDERS (seulement pages pas encore créées)
+# ============================================================
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_page():
     return make_placeholder("Shop", ICON_SHOP, "Produits & services.", "teal")
