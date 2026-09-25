@@ -57,6 +57,77 @@ HTML_SHOP_PRODUCT = (
   .delivery-link:active { transform: scale(0.98); }
   .delivery-link .icon { width: 40px; height: 40px; border-radius: 10px; background: var(--green-light); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
   .delivery-text { background: #fff; padding: 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
+
+  /* MODAL LeekPay */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 999;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-content {
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    max-height: 92vh;
+    overflow-y: auto;
+    padding: 20px 20px calc(20px + var(--safe-bottom));
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .modal-title {
+    font-size: 18px; font-weight: 800;
+    margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    font-size: 18px;
+  }
+  .modal-actions {
+    display: flex; gap: 10px;
+    margin-top: 20px;
+  }
+  .btn-cancel {
+    flex: 1; background: #f5f5f5;
+    color: var(--text-dark); border: none;
+    padding: 14px; border-radius: 12px;
+    font-weight: 700; font-size: 14px;
+    font-family: inherit; cursor: pointer;
+  }
+  .btn-submit {
+    flex: 2; background: var(--green);
+    color: #fff; border: none;
+    padding: 14px; border-radius: 12px;
+    font-weight: 700; font-size: 14px;
+    font-family: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .info-min { background: #fff8e1; border-left: 3px solid #fbc02d; border-radius: 10px; padding: 10px 12px; font-size: 11px; color: #6d4c00; margin-bottom: 14px; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -126,6 +197,9 @@ HTML_SHOP_PRODUCT = (
     <div class="modal-title">
       <span>📱 Payer par Mobile Money</span>
       <button class="modal-close" onclick="closeLeekpayModal()">✕</button>
+    </div>
+    <div class="info-min">
+      💡 Vous serez redirigé vers LeekPay pour finaliser le paiement.
     </div>
     <div class="form-group">
       <label>Numéro Mobile Money *</label>
@@ -232,6 +306,7 @@ HTML_SHOP_PRODUCT = (
   function openLeekpayModal() {
     document.getElementById('payPhone').value = '';
     document.getElementById('leekpayModal').classList.add('open');
+    updateTotal();
   }
 
   async function payWithLeekpay() {
