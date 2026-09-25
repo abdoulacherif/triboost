@@ -5,7 +5,8 @@ HTML_SHOP_PRODUCT = (
     + CSS_COMMUN
     + """
 <style>
-  body { background: #f5f5f5; }
+  /* FIX : force le body en block pour éviter le conflit avec shared.py */
+  body { display: block !important; background: #f5f5f5; }
   .app { width: 100%; max-width: 480px; background: #fff; min-height: 100vh; padding-bottom: calc(40px + var(--safe-bottom)); padding-top: var(--safe-top); margin: 0 auto; }
   .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #fff; position: sticky; top: 0; z-index: 50; }
   .back-btn { width: 40px; height: 40px; border-radius: 12px; background: var(--green-light); color: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
@@ -118,8 +119,9 @@ HTML_SHOP_PRODUCT = (
   </div>
 </div>
 
-<div id="lkModalOverlay" onclick="if(event.target===this) closeLeekpayModal()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:99999; align-items:flex-end; justify-content:center; box-sizing:border-box;">
-  <div style="background:#fff; border-radius:24px 24px 0 0; width:100%; max-width:480px; max-height:92vh; overflow-y:auto; padding:20px 20px 40px; box-sizing:border-box;">
+<!-- MODAL LEEKPAY - TOUT EN INLINE POUR ÉVITER LES CONFLITS -->
+<div id="lkModalOverlay" onclick="if(event.target===this) closeLeekpayModal()" style="display:none; position:fixed !important; inset:0 !important; width:100vw !important; height:100vh !important; background:rgba(0,0,0,0.6); z-index:2147483647 !important; align-items:flex-end; justify-content:center; box-sizing:border-box; margin:0 !important; padding:0 !important;">
+  <div style="background:#fff; border-radius:24px 24px 0 0; width:100%; max-width:480px; max-height:92vh; overflow-y:auto; padding:20px 20px 40px; box-sizing:border-box; position:relative;">
     <div style="width:40px; height:4px; background:#e0e0e0; border-radius:2px; margin:0 auto 16px;"></div>
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
