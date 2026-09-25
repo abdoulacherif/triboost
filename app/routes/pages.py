@@ -5,6 +5,7 @@ from app.templates.activation import HTML_ACTIVATION
 from app.templates.activation_success import HTML_ACTIVATION_SUCCESS
 from app.templates.admin import HTML_ADMIN
 from app.templates.admin_content import HTML_ADMIN_CONTENT
+from app.templates.admin_shop import HTML_ADMIN_SHOP
 from app.templates.affaire import HTML_AFFAIRE
 from app.templates.affilie import HTML_AFFILIE
 from app.templates.boost import HTML_BOOST
@@ -516,6 +517,11 @@ async def admin_page():
 @router.get("/admin/content", response_class=HTMLResponse)
 async def admin_content_page():
     return HTML_ADMIN_CONTENT
+
+
+@router.get("/admin/shop", response_class=HTMLResponse)
+async def admin_shop_page():
+    return HTML_ADMIN_SHOP
 
 
 # ============================================================
