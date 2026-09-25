@@ -9,13 +9,13 @@ from app.templates.boost import HTML_BOOST
 from app.templates.boutique import HTML_BOUTIQUE
 from app.templates.commissions import HTML_COMMISSIONS
 from app.templates.dashboard import HTML_DASHBOARD
+from app.templates.formation import HTML_FORMATION
 from app.templates.formation_detail import HTML_FORMATION_DETAIL
 from app.templates.historique import HTML_HISTORIQUE
 from app.templates.login import HTML_LOGIN
 from app.templates.marche import HTML_MARCHE
 from app.templates.placeholder import (
     ICON_CHAT,
-    ICON_FORMATION,
     ICON_SHOP,
     ICON_TOURNER,
     make_placeholder,
@@ -253,7 +253,7 @@ HTML_PAIEMENTS = (
 
   function setAmount(inputId, value, btn) {
     document.getElementById(inputId).value = value;
-    btn.parentElement.querySelectorAll('.qa-btn').forEach(b => b.classList.remove('active'));
+    btn.parentElement.querySelectorAll('.qa-btn').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
   }
 
@@ -305,7 +305,6 @@ HTML_PAIEMENTS = (
       alert('Demande envoyee ! Traitement 24-72h');
       document.getElementById('withdrawForm').reset();
       document.getElementById('wOperator').disabled = true;
-      document.getElementById('wOperator').innerHTML = '<option value="">-- Choisir un pays d abord --</option>';
       loadProfile();
     } catch (err) {
       errEl.textContent = err.message; errEl.style.display = 'block';
@@ -478,17 +477,17 @@ async def paiements_page():
     return HTML_PAIEMENTS
 
 
+@router.get("/formation", response_class=HTMLResponse)
+async def formation_page():
+    return HTML_FORMATION
+
+
 # ============================================================
 # PLACEHOLDERS
 # ============================================================
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
     return make_placeholder("Tourner", ICON_TOURNER, "Roue de la chance.", "purple")
-
-
-@router.get("/formation", response_class=HTMLResponse)
-async def formation_page():
-    return make_placeholder("Formation", ICON_FORMATION, "Formations TriBoost.", "orange")
 
 
 @router.get("/shop", response_class=HTMLResponse)
