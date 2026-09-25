@@ -17,12 +17,10 @@ from app.templates.formation_detail import HTML_FORMATION_DETAIL
 from app.templates.historique import HTML_HISTORIQUE
 from app.templates.login import HTML_LOGIN
 from app.templates.marche import HTML_MARCHE
-from app.templates.placeholder import (
-    ICON_SHOP,
-    make_placeholder,
-)
 from app.templates.register import HTML_REGISTER
 from app.templates.shared import CSS_COMMUN, HTML_HEAD, JS_COMMUN
+from app.templates.shop import HTML_SHOP
+from app.templates.shop_product import HTML_SHOP_PRODUCT
 from app.templates.taches import HTML_TACHES
 from app.templates.tourner import HTML_TOURNER
 
@@ -495,6 +493,19 @@ async def chat_page():
 
 
 # ============================================================
+# SHOP
+# ============================================================
+@router.get("/shop", response_class=HTMLResponse)
+async def shop_page():
+    return HTML_SHOP
+
+
+@router.get("/shop/p/{code}", response_class=HTMLResponse)
+async def shop_product_page(code: str):
+    return HTML_SHOP_PRODUCT
+
+
+# ============================================================
 # ADMIN
 # ============================================================
 @router.get("/admin", response_class=HTMLResponse)
@@ -505,14 +516,6 @@ async def admin_page():
 @router.get("/admin/content", response_class=HTMLResponse)
 async def admin_content_page():
     return HTML_ADMIN_CONTENT
-
-
-# ============================================================
-# PLACEHOLDERS (pages pas encore créées)
-# ============================================================
-@router.get("/shop", response_class=HTMLResponse)
-async def shop_page():
-    return make_placeholder("Shop", ICON_SHOP, "Produits & services.", "teal")
 
 
 # ============================================================
