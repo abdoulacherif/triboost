@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.routes import (
     admin,
+    admin_content,
     affaires,
     auth,
     boost,
@@ -17,7 +18,10 @@ from app.routes import (
 
 app = FastAPI(title="TriBoost", version="1.0.0")
 
+# Pages HTML
 app.include_router(pages.router, tags=["Pages"])
+
+# API
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(marketplace.router, prefix="/api/marketplace", tags=["Marketplace"])
 app.include_router(network.router, prefix="/api/network", tags=["Network"])
@@ -29,3 +33,4 @@ app.include_router(affaires.router, prefix="/api/affaires", tags=["Affaires"])
 app.include_router(boost.router, prefix="/api/boost", tags=["Boost"])
 app.include_router(wheel.router, prefix="/api/wheel", tags=["Wheel"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(admin_content.router, prefix="/api/admin/content", tags=["AdminContent"])
