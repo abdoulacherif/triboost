@@ -9,6 +9,7 @@ from app.templates.affaire import HTML_AFFAIRE
 from app.templates.affilie import HTML_AFFILIE
 from app.templates.boost import HTML_BOOST
 from app.templates.boutique import HTML_BOUTIQUE
+from app.templates.chat import HTML_CHAT
 from app.templates.commissions import HTML_COMMISSIONS
 from app.templates.dashboard import HTML_DASHBOARD
 from app.templates.formation import HTML_FORMATION
@@ -17,7 +18,6 @@ from app.templates.historique import HTML_HISTORIQUE
 from app.templates.login import HTML_LOGIN
 from app.templates.marche import HTML_MARCHE
 from app.templates.placeholder import (
-    ICON_CHAT,
     ICON_SHOP,
     make_placeholder,
 )
@@ -489,6 +489,11 @@ async def tourner_page():
     return HTML_TOURNER
 
 
+@router.get("/chat", response_class=HTMLResponse)
+async def chat_page():
+    return HTML_CHAT
+
+
 # ============================================================
 # ADMIN
 # ============================================================
@@ -503,16 +508,11 @@ async def admin_content_page():
 
 
 # ============================================================
-# PLACEHOLDERS
+# PLACEHOLDERS (pages pas encore créées)
 # ============================================================
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_page():
     return make_placeholder("Shop", ICON_SHOP, "Produits & services.", "teal")
-
-
-@router.get("/chat", response_class=HTMLResponse)
-async def chat_page():
-    return make_placeholder("Chat", ICON_CHAT, "Discutez avec votre équipe.", "blue")
 
 
 # ============================================================
