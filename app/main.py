@@ -13,16 +13,14 @@ from app.routes import (
     network,
     pages,
     payments,
+    shop,
     tasks,
     wheel,
 )
 
 app = FastAPI(title="TriBoost", version="1.0.0")
 
-# Pages HTML
 app.include_router(pages.router, tags=["Pages"])
-
-# API
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(marketplace.router, prefix="/api/marketplace", tags=["Marketplace"])
 app.include_router(network.router, prefix="/api/network", tags=["Network"])
@@ -36,3 +34,4 @@ app.include_router(wheel.router, prefix="/api/wheel", tags=["Wheel"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(admin_content.router, prefix="/api/admin/content", tags=["AdminContent"])
 app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
+app.include_router(shop.router, prefix="/api/shop", tags=["Shop"])
