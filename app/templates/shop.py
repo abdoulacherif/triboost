@@ -57,10 +57,13 @@ HTML_SHOP = (
   .empty-state h3 { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
   .empty-state p { font-size: 12px; }
 
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); z-index: 999; display: none; align-items: flex-end; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal-content { background: #fff; border-radius: 20px 20px 0 0; padding: 20px 20px calc(20px + var(--safe-bottom)); max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; }
-  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 16px; }
+  /* MODAL */
+  #affModalOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999; align-items: flex-end; justify-content: center; }
+  #affModalOverlay.open { display: flex; }
+  #affModalOverlay .content { background: #fff; border-radius: 24px 24px 0 0; padding: 20px 20px 40px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; box-sizing: border-box; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--text-dark); }
   .form-group { margin-bottom: 14px; }
   .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
   .form-group input { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; }
@@ -70,9 +73,71 @@ HTML_SHOP = (
   .modal-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-weight: 800; font-size: 14px; font-family: inherit; cursor: pointer; }
   .modal-btn.cancel { background: #f5f5f5; color: var(--text-dark); }
   .modal-btn.confirm { background: var(--green); color: #fff; }
+
+  /* ===== TOAST ===== */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2147483647;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    max-width: 90vw;
+    width: 340px;
+  }
+  .toast {
+    padding: 16px 20px;
+    border-radius: 16px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: auto;
+    animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    line-height: 1.4;
+  }
+  .toast.success {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+  }
+  .toast.error {
+    background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  }
+  .toast.warning {
+    background: linear-gradient(135deg, #f57c00, #e65100);
+  }
+  .toast.info {
+    background: linear-gradient(135deg, #1976d2, #0d47a1);
+  }
+  .toast .toast-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .toast .toast-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .toast.out {
+    animation: toastOut 0.3s ease forwards;
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastOut {
+    to { opacity: 0; transform: translateY(-20px); }
+  }
 </style>
 </head>
 <body>
+
+<!-- Container pour les toasts -->
+<div class="toast-container" id="toastContainer"></div>
 
 <div class="app">
   <header class="topbar">
@@ -107,8 +172,9 @@ HTML_SHOP = (
   <div style="height: 40px;"></div>
 </div>
 
-<div class="modal-overlay" id="affModal">
-  <div class="modal-content">
+<div id="affModalOverlay" onclick="if(event.target===this) closeModal()">
+  <div class="content">
+    <div class="modal-handle"></div>
     <div class="modal-title" id="affModalTitle">Affilier ce produit</div>
     <div class="info-min" id="affInfo"></div>
     <div class="form-group">
@@ -116,7 +182,7 @@ HTML_SHOP = (
       <input type="number" id="affPrice" step="100" min="0">
     </div>
     <div class="modal-actions">
-      <button class="modal-btn cancel" onclick="closeModal('affModal')">Annuler</button>
+      <button class="modal-btn cancel" onclick="closeModal()">Annuler</button>
       <button class="modal-btn confirm" onclick="confirmAffiliate()">Affilier</button>
     </div>
   </div>
@@ -136,9 +202,39 @@ HTML_SHOP = (
 
   function headers() { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
   function escapeHtml(s) { return s ? String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : ''; }
-  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-  function openModal(id) { document.getElementById(id).classList.add('open'); }
   function fmt(n) { return Number(n || 0).toLocaleString('fr-FR'); }
+
+  // ===== TOAST SYSTÈME =====
+  function showToast(message, type) {
+    type = type || 'success';
+    const container = document.getElementById('toastContainer');
+    const icons = {
+      success: '✓',
+      error: '✕',
+      warning: '⚠',
+      info: 'ℹ'
+    };
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML = '<div class="toast-icon">' + icons[type] + '</div><div class="toast-text">' + message + '</div>';
+    container.appendChild(toast);
+
+    if (navigator.vibrate) navigator.vibrate(type === 'error' ? [30, 50, 30] : 20);
+
+    setTimeout(function() {
+      toast.classList.add('out');
+      setTimeout(function() { toast.remove(); }, 300);
+    }, 3000);
+  }
+
+  function closeModal() {
+    document.getElementById('affModalOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  function openModal() {
+    document.getElementById('affModalOverlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
 
   // ===== PRODUITS =====
   async function loadProducts() {
@@ -225,9 +321,7 @@ HTML_SHOP = (
 
   function copyLink(link, btn) {
     navigator.clipboard.writeText(link).then(function() {
-      const orig = btn.textContent;
-      btn.textContent = '✓';
-      setTimeout(function() { btn.textContent = orig; }, 1500);
+      showToast('Lien copié !', 'success');
     });
   }
 
@@ -235,9 +329,10 @@ HTML_SHOP = (
     if (!confirm('Supprimer ce lien d\\'affiliation ?')) return;
     try {
       await fetch('/api/shop/affiliate/' + id, { method: 'DELETE', headers: headers() });
+      showToast('Lien supprimé', 'info');
       loadMyAff();
       loadProducts();
-    } catch (e) { alert('Erreur'); }
+    } catch (e) { showToast('Erreur', 'error'); }
   }
 
   // ===== MODAL AFFILIER =====
@@ -256,13 +351,13 @@ HTML_SHOP = (
       'Votre commission de base : <strong>+' + fmt(currentProduct.commission) + ' F</strong><br>' +
       'Tout montant au-dessus du prix minimum vous revient à 100%.';
 
-    openModal('affModal');
+    openModal();
   }
 
   async function confirmAffiliate() {
     const price = parseFloat(document.getElementById('affPrice').value);
     if (!price || price < currentProduct.price) {
-      alert('⚠ Prix minimum : ' + fmt(currentProduct.price) + ' F');
+      showToast('Prix minimum : ' + fmt(currentProduct.price) + ' F', 'warning');
       return;
     }
 
@@ -273,12 +368,17 @@ HTML_SHOP = (
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Erreur');
-      closeModal('affModal');
+
+      closeModal();
+
+      // ✅ Message propre au lieu du JSON brut
+      const msg = (data.result && data.result.message) ? data.result.message : 'Produit affilié !';
+      showToast(msg, 'success');
+
       await loadMyAff();
       renderProducts();
-      alert('✅ ' + (data.result?.message || 'Produit affilié !'));
     } catch (e) {
-      alert('⚠ ' + e.message);
+      showToast(e.message, 'error');
     }
   }
 
