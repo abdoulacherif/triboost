@@ -23,12 +23,12 @@ HTML_SHOP_PRODUCT = (
 
   .form-group { margin-bottom: 14px; }
   .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text-dark); }
-  .form-group input, .form-group textarea { width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; font-family: inherit; outline: none; background: #fff; box-sizing: border-box; }
-  .form-group input:focus, .form-group textarea:focus { border-color: var(--green); }
+  .form-group input { width: 100%; padding: 14px; border: 1.5px solid #e0e0e0; border-radius: 12px; font-size: 15px; font-family: inherit; outline: none; background: #fff; box-sizing: border-box; }
+  .form-group input:focus { border-color: var(--green); }
 
   .qty-row { display: flex; align-items: center; gap: 10px; }
   .qty-btn { width: 40px; height: 40px; border-radius: 10px; background: var(--green-light); color: var(--green); border: none; font-size: 20px; font-weight: 900; cursor: pointer; font-family: inherit; }
-  .qty-input { flex: 1; text-align: center; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 16px; font-weight: 700; outline: none; min-width: 0; }
+  .qty-input { flex: 1; text-align: center; padding: 12px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 16px; font-weight: 700; outline: none; min-width: 0; }
 
   .btn-order { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; border: none; padding: 18px; border-radius: 14px; font-weight: 900; font-size: 16px; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(46,125,50,0.3); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-order:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -57,93 +57,6 @@ HTML_SHOP_PRODUCT = (
   .delivery-link:active { transform: scale(0.98); }
   .delivery-link .icon { width: 40px; height: 40px; border-radius: 10px; background: var(--green-light); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
   .delivery-text { background: #fff; padding: 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
-
-  /* ===== MODAL LEEKPAY (classes uniques préfixées lk-) ===== */
-  #lkModalOverlay {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background: rgba(0,0,0,0.6);
-    z-index: 99999 !important;
-    align-items: flex-end;
-    justify-content: center;
-    box-sizing: border-box;
-  }
-  #lkModalOverlay.lk-open {
-    display: flex !important;
-  }
-  .lk-modal-content {
-    background: #fff;
-    border-radius: 24px 24px 0 0;
-    max-width: 480px;
-    width: 100%;
-    max-height: 92vh;
-    overflow-y: auto;
-    padding: 20px 20px calc(20px + var(--safe-bottom, 0px));
-    box-sizing: border-box;
-    animation: lkslideup 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  @keyframes lkslideup {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-  }
-  .lk-modal-handle {
-    width: 40px; height: 4px;
-    background: #e0e0e0;
-    border-radius: 2px;
-    margin: 0 auto 16px;
-  }
-  .lk-modal-title {
-    font-size: 18px; font-weight: 800;
-    margin-bottom: 20px;
-    display: flex; justify-content: space-between; align-items: center;
-    color: var(--text-dark);
-  }
-  .lk-modal-close {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: #f5f5f5;
-    border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-muted);
-    font-size: 18px;
-    font-family: inherit;
-  }
-  .lk-modal-actions {
-    display: flex; gap: 10px;
-    margin-top: 20px;
-  }
-  .lk-btn-cancel {
-    flex: 1; background: #f5f5f5;
-    color: var(--text-dark); border: none;
-    padding: 14px; border-radius: 12px;
-    font-weight: 700; font-size: 14px;
-    font-family: inherit; cursor: pointer;
-  }
-  .lk-btn-submit {
-    flex: 2; background: var(--green);
-    color: #fff; border: none;
-    padding: 14px; border-radius: 12px;
-    font-weight: 700; font-size: 14px;
-    font-family: inherit; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .lk-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-  .lk-info-min {
-    background: #fff8e1;
-    border-left: 3px solid #fbc02d;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 11px;
-    color: #6d4c00;
-    margin-bottom: 14px;
-    line-height: 1.5;
-  }
 </style>
 </head>
 <body>
@@ -205,23 +118,27 @@ HTML_SHOP_PRODUCT = (
   </div>
 </div>
 
-<div id="lkModalOverlay" onclick="if(event.target===this) closeLeekpayModal()">
-  <div class="lk-modal-content">
-    <div class="lk-modal-handle"></div>
-    <div class="lk-modal-title">
-      <span>📱 Payer par Mobile Money</span>
-      <button class="lk-modal-close" onclick="closeLeekpayModal()">✕</button>
+<div id="lkModalOverlay" onclick="if(event.target===this) closeLeekpayModal()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:99999; align-items:flex-end; justify-content:center; box-sizing:border-box;">
+  <div style="background:#fff; border-radius:24px 24px 0 0; width:100%; max-width:480px; max-height:92vh; overflow-y:auto; padding:20px 20px 40px; box-sizing:border-box;">
+    <div style="width:40px; height:4px; background:#e0e0e0; border-radius:2px; margin:0 auto 16px;"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:18px; font-weight:800; color:#212121;">📱 Payer par Mobile Money</span>
+      <button onclick="closeLeekpayModal()" style="width:32px; height:32px; border-radius:50%; background:#f5f5f5; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#757575; font-size:18px; font-family:inherit;">✕</button>
     </div>
-    <div class="lk-info-min">
+
+    <div style="background:#fff8e1; border-left:3px solid #fbc02d; border-radius:10px; padding:10px 12px; font-size:11px; color:#6d4c00; margin-bottom:14px; line-height:1.5;">
       💡 Vous serez redirigé vers LeekPay pour finaliser le paiement.
     </div>
+
     <div class="form-group">
       <label>Numéro Mobile Money *</label>
       <input type="tel" id="payPhone" placeholder="+237 6XX XXX XXX" inputmode="tel">
     </div>
-    <div class="lk-modal-actions">
-      <button type="button" class="lk-btn-cancel" onclick="closeLeekpayModal()">Annuler</button>
-      <button type="button" class="lk-btn-submit" id="leekpayBtn" onclick="payWithLeekpay()">
+
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button type="button" onclick="closeLeekpayModal()" style="flex:1; background:#f5f5f5; color:#212121; border:none; padding:14px; border-radius:12px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer;">Annuler</button>
+      <button type="button" id="leekpayBtn" onclick="payWithLeekpay()" style="flex:2; background:var(--green); color:#fff; border:none; padding:14px; border-radius:12px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
         <span>Payer <span id="modalTotal">-</span></span>
       </button>
     </div>
@@ -247,7 +164,7 @@ HTML_SHOP_PRODUCT = (
   function fmt(n) { return Number(n || 0).toLocaleString('fr-FR'); }
 
   function closeLeekpayModal() {
-    document.getElementById('lkModalOverlay').classList.remove('lk-open');
+    document.getElementById('lkModalOverlay').style.display = 'none';
     document.body.style.overflow = '';
   }
 
@@ -324,7 +241,7 @@ HTML_SHOP_PRODUCT = (
   function openLeekpayModal() {
     document.getElementById('payPhone').value = '';
     updateTotal();
-    document.getElementById('lkModalOverlay').classList.add('lk-open');
+    document.getElementById('lkModalOverlay').style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
 
@@ -355,7 +272,7 @@ HTML_SHOP_PRODUCT = (
     } catch (e) {
       alert('⚠ ' + e.message);
       btn.disabled = false;
-      btn.innerHTML = '<span>Payer <span id="modalTotal">' + fmt(affiliate.custom_price * qty) + ' F</span></span>';
+      btn.innerHTML = '<span>Payer</span>';
     }
   }
 
