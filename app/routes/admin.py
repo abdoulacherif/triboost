@@ -70,31 +70,19 @@ async def list_users(request: Request, search: str = ""):
         admin = get_supabase_admin()
 
         result = admin.table("profiles").select(
-            "id, full_name, phone, country, referral_code, referred_by, is_activated, is_admin, is_banned, wallet_balance, total_earned, created_at"
-        ).order("created_at", desc=True).limit(200).execute()
+            "id, full_name, phone, country, referral_code, referred_by, is_activated, is_admin, is_banned, wallet_balance, total_earned, admin_note, created_at"
+        ).order("created_at", desc=True).limit(50).execute()
 
         users = result.data or []
 
-        # Récupérer les emails via auth admin
-        try:
-            auth_users = admin.auth.admin.list_users()
-            email_map = {}
-            if hasattr(auth_users, "users"):
-                for u in auth_users.users:
-                    email_map[str(u.id)] = u.email
-            elif isinstance(auth_users, list):
-                for u in auth_users:
-                    email_map[str(u.id)] = u.email
-            for u in users:
-                u["email"] = email_map.get(u["id"], "")
-        except Exception as e:
-            print(f"[ADMIN] emails: {e}")
+        # Email vide par défaut (récupéré uniquement dans le modal)
+        for u in users:
+            u["email"] = ""
 
         if search:
             s = search.lower()
             users = [u for u in users if
                      s in (u.get("full_name", "") or "").lower()
-                     or s in (u.get("email", "") or "").lower()
                      or s in (u.get("phone", "") or "").lower()
                      or s in (u.get("referral_code", "") or "").lower()]
 
@@ -133,28 +121,21 @@ async def update_balance(user_id: str, request: Request):
 
 @router.post("/users/{user_id}/toggle-activation")
 async def toggle_activation(user_id: str, request: Request):
-    """
-    Bascule l'activation d'un compte.
-    Si on active → utilise admin_activate_with_commissions (distribue les commissions)
-    Si on désactive → utilise admin_toggle_activation (simple bascule)
-    """
+    """Bascule l'activation. Active → distribue les commissions."""
     try:
         admin_id = await _check_admin(request)
         admin = get_supabase_admin()
 
-        # Vérifier le statut actuel
         current = admin.table("profiles").select("is_activated").eq("id", user_id).execute()
         is_activated = bool(current.data[0].get("is_activated")) if current.data else False
 
         if is_activated:
-            # Désactiver normalement
             result = admin.rpc("admin_toggle_activation", {
                 "p_admin_id": admin_id,
                 "p_user_id": user_id,
             }).execute()
             message = "Compte désactivé"
         else:
-            # Activer AVEC distribution des commissions
             result = admin.rpc("admin_activate_with_commissions", {
                 "p_admin_id": admin_id,
                 "p_user_id": user_id,
@@ -179,7 +160,7 @@ async def list_referrals(request: Request):
 
         users = admin.table("profiles").select(
             "id, full_name, referral_code, referred_by, is_activated, created_at"
-        ).execute()
+        ).limit(200).execute()
         users_list = users.data or []
         users_map = {u["id"]: u for u in users_list}
 
@@ -209,7 +190,7 @@ async def list_tasks_admin(request: Request, status: str = "pending"):
 
         q = admin.table("task_submissions").select(
             "id, user_id, task_id, network, proof_url, comment, status, reward, admin_note, created_at, tasks(title, icon)"
-        ).order("created_at", desc=True).limit(100)
+        ).order("created_at", desc=True).limit(50)
 
         if status and status != "all":
             q = q.eq("status", status)
@@ -268,7 +249,7 @@ async def admin_delete_submission(submission_id: str, request: Request):
 
 
 # ============================================================
-# GESTION DES TÂCHES (le catalogue)
+# GESTION DES TÂCHES (catalogue)
 # ============================================================
 @router.get("/tasks-all")
 async def admin_list_all_tasks(request: Request):
@@ -367,7 +348,7 @@ async def list_withdrawals_admin(request: Request, status: str = "pending"):
         await _check_admin(request)
         admin = get_supabase_admin()
 
-        q = admin.table("withdrawals").select("*").order("created_at", desc=True).limit(100)
+        q = admin.table("withdrawals").select("*").order("created_at", desc=True).limit(50)
         if status and status != "all":
             q = q.eq("status", status)
 
@@ -433,7 +414,7 @@ async def list_recharges_admin(request: Request, status: str = "pending"):
         await _check_admin(request)
         admin = get_supabase_admin()
 
-        q = admin.table("recharges").select("*").order("created_at", desc=True).limit(100)
+        q = admin.table("recharges").select("*").order("created_at", desc=True).limit(50)
         if status and status != "all":
             q = q.eq("status", status)
 
