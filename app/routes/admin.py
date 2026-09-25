@@ -311,3 +311,147 @@ async def confirm_recharge_admin(recharge_id: str, request: Request):
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+# ============================================================
+# CRÉER UNE TÂCHE
+# ============================================================
+@router.post("/tasks/create")
+async def admin_create_task(request: Request):
+    try:
+        await _check_admin(request)
+        body = await request.json()
+
+        title = (body.get("title") or "").strip()
+        description = (body.get("description") or "").strip()
+        instructions = (body.get("instructions") or "").strip()
+        reward = float(body.get("reward", 0))
+        icon = body.get("icon", "🎯")
+        network_hint = body.get("network_hint", "")
+
+        if not title or reward <= 0:
+            raise HTTPException(status_code=400, detail="Titre et récompense obligatoires")
+
+        admin = get_supabase_admin()
+        result = admin.table("tasks").insert({
+            "title": title,
+            "description": description,
+            "instructions": instructions,
+            "reward": reward,
+            "icon": icon,
+            "network_hint": network_hint,
+            "is_active": True,
+        }).execute()
+
+        return {"success": True, "task": result.data[0] if result.data else None}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# MODIFIER UNE TÂCHE
+# ============================================================
+@router.post("/tasks/{task_id}/update")
+async def admin_update_task(task_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        body = await request.json()
+
+        update_data = {}
+        for field in ["title", "description", "instructions", "icon", "network_hint"]:
+            if field in body:
+                update_data[field] = body[field]
+        if "reward" in body:
+            update_data["reward"] = float(body["reward"])
+        if "is_active" in body:
+            update_data["is_active"] = bool(body["is_active"])
+
+        admin = get_supabase_admin()
+        admin.table("tasks").update(update_data).eq("id", task_id).execute()
+
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# SUPPRIMER UNE TÂCHE
+# ============================================================
+@router.delete("/tasks/{task_id}")
+async def admin_delete_task(task_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        admin.table("tasks").delete().eq("id", task_id).execute()
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# LISTE TOUTES LES TÂCHES (pas seulement les soumissions)
+# ============================================================
+@router.get("/tasks-all")
+async def admin_list_all_tasks(request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        result = admin.table("tasks").select("*").order("sort_order").order("created_at", desc=True).execute()
+        return {"success": True, "tasks": result.data or []}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# SUPPRIMER UNE SOUMISSION
+# ============================================================
+@router.delete("/submissions/{submission_id}")
+async def admin_delete_submission(submission_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        admin.table("task_submissions").delete().eq("id", submission_id).execute()
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# SUPPRIMER UN RETRAIT
+# ============================================================
+@router.delete("/withdrawals/{withdrawal_id}")
+async def admin_delete_withdrawal(withdrawal_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        admin.table("withdrawals").delete().eq("id", withdrawal_id).execute()
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================
+# SUPPRIMER UNE RECHARGE
+# ============================================================
+@router.delete("/recharges/{recharge_id}")
+async def admin_delete_recharge(recharge_id: str, request: Request):
+    try:
+        await _check_admin(request)
+        admin = get_supabase_admin()
+        admin.table("recharges").delete().eq("id", recharge_id).execute()
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
