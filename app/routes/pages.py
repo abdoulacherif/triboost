@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 
 from app.templates.activation import HTML_ACTIVATION
 from app.templates.activation_success import HTML_ACTIVATION_SUCCESS
+from app.templates.admin import HTML_ADMIN
 from app.templates.affaire import HTML_AFFAIRE
 from app.templates.affilie import HTML_AFFILIE
 from app.templates.boost import HTML_BOOST
@@ -487,8 +488,13 @@ async def tourner_page():
     return HTML_TOURNER
 
 
+@router.get("/admin", response_class=HTMLResponse)
+async def admin_page():
+    return HTML_ADMIN
+
+
 # ============================================================
-# PLACEHOLDERS (seulement pages pas encore créées)
+# PLACEHOLDERS (pages pas encore créées)
 # ============================================================
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_page():
