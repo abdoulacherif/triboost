@@ -25,14 +25,14 @@ HTML_SHOP_PRODUCT = (
   .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text-dark); }
   .form-group input, .form-group textarea { width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; font-family: inherit; outline: none; background: #fff; }
   .form-group input:focus, .form-group textarea:focus { border-color: var(--green); }
-  .form-group textarea { min-height: 70px; resize: vertical; }
 
   .qty-row { display: flex; align-items: center; gap: 10px; }
   .qty-btn { width: 40px; height: 40px; border-radius: 10px; background: var(--green-light); color: var(--green); border: none; font-size: 20px; font-weight: 900; cursor: pointer; font-family: inherit; }
   .qty-input { flex: 1; text-align: center; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 16px; font-weight: 700; outline: none; }
 
-  .btn-order { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; border: none; padding: 18px; border-radius: 14px; font-weight: 900; font-size: 16px; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(46,125,50,0.3); margin-top: 10px; }
+  .btn-order { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; border: none; padding: 18px; border-radius: 14px; font-weight: 900; font-size: 16px; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(46,125,50,0.3); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-order:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-order.gold { background: linear-gradient(135deg, #fbc02d, #f57c00); color: #212121; }
 
   .total-line { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; border-bottom: 1px solid #f5f5f5; }
   .total-line.final { border-bottom: none; font-size: 18px; font-weight: 900; color: var(--green); margin-top: 6px; }
@@ -44,12 +44,19 @@ HTML_SHOP_PRODUCT = (
   .empty-state .icon { font-size: 60px; margin-bottom: 16px; }
   .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
 
-  .success-screen { display: none; padding: 40px 20px; text-align: center; }
+  .success-screen { display: none; padding: 30px 20px; text-align: center; }
   .success-screen.show { display: block; }
   .success-icon { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 50px; margin: 0 auto 20px; animation: pop 0.5s ease; }
   @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
   .success-screen h2 { font-size: 22px; font-weight: 900; color: var(--text-dark); margin-bottom: 12px; }
   .success-screen p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
+
+  .delivery-box { background: linear-gradient(135deg, #e8f5e9, #f1f8e9); border: 2px solid var(--green); border-radius: 16px; padding: 20px; margin: 20px 0; text-align: left; }
+  .delivery-box h3 { font-size: 15px; font-weight: 800; color: var(--green); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .delivery-link { display: flex; align-items: center; gap: 8px; background: #fff; padding: 14px; border-radius: 12px; text-decoration: none; color: var(--text-dark); font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+  .delivery-link:active { transform: scale(0.98); }
+  .delivery-link .icon { width: 40px; height: 40px; border-radius: 10px; background: var(--green-light); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .delivery-text { background: #fff; padding: 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
 </style>
 </head>
 <body>
@@ -74,26 +81,11 @@ HTML_SHOP_PRODUCT = (
       <div class="product-desc" id="productDesc"></div>
 
       <div style="background: #f9f9f9; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
-        <div style="font-size: 13px; font-weight: 800; margin-bottom: 10px;">📋 Vos informations</div>
-        <div class="form-group">
-          <label>Nom complet *</label>
-          <input type="text" id="buyerName" placeholder="Ex : Jean Dupont" required>
-        </div>
-        <div class="form-group">
-          <label>Téléphone *</label>
-          <input type="tel" id="buyerPhone" placeholder="+237 6XX XXX XXX" inputmode="tel" required>
-        </div>
-        <div class="form-group">
-          <label>Adresse de livraison</label>
-          <textarea id="buyerAddress" placeholder="Quartier, ville..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Quantité</label>
-          <div class="qty-row">
-            <button class="qty-btn" onclick="changeQty(-1)">−</button>
-            <input type="number" class="qty-input" id="qty" value="1" min="1" onchange="updateTotal()">
-            <button class="qty-btn" onclick="changeQty(1)">+</button>
-          </div>
+        <div style="font-size: 13px; font-weight: 800; margin-bottom: 10px;">🛒 Quantité</div>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+          <input type="number" class="qty-input" id="qty" value="1" min="1" onchange="updateTotal()">
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
         </div>
       </div>
 
@@ -103,19 +95,48 @@ HTML_SHOP_PRODUCT = (
         <div class="total-line final"><span>Total</span><span id="totalPrice">-</span></div>
       </div>
 
-      <button class="btn-order" id="orderBtn" onclick="submitOrder()">🛒 Commander</button>
+      <button class="btn-order" id="payWalletBtn" onclick="payWithWallet()">
+        💰 Payer avec mon solde
+      </button>
+
+      <button class="btn-order gold" id="payLeekpayBtn" onclick="openLeekpayModal()" style="margin-top: 10px;">
+        📱 Payer par Mobile Money
+      </button>
 
       <p style="text-align: center; font-size: 11px; color: #9e9e9e; margin-top: 16px;">
-        Le vendeur vous contactera pour finaliser la transaction.
+        Livraison instantanée après paiement
       </p>
     </div>
   </div>
 
   <div class="success-screen" id="successScreen">
     <div class="success-icon">✓</div>
-    <h2>Commande envoyée !</h2>
-    <p>Le vendeur vous contactera bientôt pour finaliser la transaction.</p>
-    <button class="btn-order" onclick="location.href='/'">Fermer</button>
+    <h2>Paiement réussi !</h2>
+    <p>Voici votre produit :</p>
+
+    <div class="delivery-box" id="deliveryBox"></div>
+
+    <button class="btn-order" onclick="location.href='/shop'">Retour au shop</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="leekpayModal" onclick="if(event.target===this) closeLeekpayModal()">
+  <div class="modal-content">
+    <div class="modal-handle"></div>
+    <div class="modal-title">
+      <span>📱 Payer par Mobile Money</span>
+      <button class="modal-close" onclick="closeLeekpayModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Numéro Mobile Money *</label>
+      <input type="tel" id="payPhone" placeholder="+237 6XX XXX XXX" inputmode="tel">
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-cancel" onclick="closeLeekpayModal()">Annuler</button>
+      <button type="button" class="btn-submit" id="leekpayBtn" onclick="payWithLeekpay()">
+        <span>Payer <span id="modalTotal">-</span></span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -123,14 +144,20 @@ HTML_SHOP_PRODUCT = (
     + JS_COMMUN
     + """
 <script>
+  const token = localStorage.getItem('access_token');
+  const userId = localStorage.getItem('user_id');
+  if (!token || !userId) window.location.href = '/login';
+
   const pathParts = window.location.pathname.split('/');
   const affiliateCode = pathParts[pathParts.length - 1];
 
   let product = null;
   let affiliate = null;
 
+  function headers() { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
   function escapeHtml(s) { return s ? String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : ''; }
   function fmt(n) { return Number(n || 0).toLocaleString('fr-FR'); }
+  function closeLeekpayModal() { document.getElementById('leekpayModal').classList.remove('open'); }
 
   async function loadProduct() {
     try {
@@ -144,10 +171,7 @@ HTML_SHOP_PRODUCT = (
       document.getElementById('loading').style.display = 'none';
       document.getElementById('productContent').style.display = 'block';
 
-      const img = product.image_url
-        ? '<img src="' + product.image_url + '" alt="">'
-        : '📦';
-
+      const img = product.image_url ? '<img src="' + product.image_url + '" alt="">' : '📦';
       document.getElementById('productImg').innerHTML = img;
       document.getElementById('productTitle').textContent = product.title;
       document.getElementById('productDesc').textContent = product.description || 'Aucune description.';
@@ -162,8 +186,8 @@ HTML_SHOP_PRODUCT = (
 
   function changeQty(delta) {
     const input = document.getElementById('qty');
-    const newVal = Math.max(1, (parseInt(input.value) || 1) + delta);
-    input.value = newVal;
+    const v = Math.max(1, (parseInt(input.value) || 1) + delta);
+    input.value = v;
     updateTotal();
   }
 
@@ -175,49 +199,98 @@ HTML_SHOP_PRODUCT = (
     document.getElementById('unitPrice').textContent = fmt(unit) + ' F';
     document.getElementById('qtyDisplay').textContent = qty;
     document.getElementById('totalPrice').textContent = fmt(total) + ' F';
+    document.getElementById('modalTotal').textContent = fmt(total) + ' F';
   }
 
-  async function submitOrder() {
-    const name = document.getElementById('buyerName').value.trim();
-    const phone = document.getElementById('buyerPhone').value.trim();
-    const address = document.getElementById('buyerAddress').value.trim();
+  // ===== PAIEMENT VIA WALLET =====
+  async function payWithWallet() {
     const qty = parseInt(document.getElementById('qty').value) || 1;
+    if (!confirm('Payer ' + fmt(affiliate.custom_price * qty) + ' F avec votre solde ?')) return;
 
-    if (!name || !phone) {
-      alert('⚠ Nom et téléphone obligatoires');
-      return;
-    }
-
-    const btn = document.getElementById('orderBtn');
+    const btn = document.getElementById('payWalletBtn');
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner"></div>';
 
     try {
-      const res = await fetch('/api/shop/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          affiliate_code: affiliateCode,
-          buyer_name: name,
-          buyer_phone: phone,
-          buyer_address: address,
-          quantity: qty,
-        })
+      const res = await fetch('/api/shop/order-with-wallet', {
+        method: 'POST', headers: headers(),
+        body: JSON.stringify({ affiliate_code: affiliateCode, quantity: qty })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Erreur');
+      if (!data.result.success) throw new Error(data.result.message);
+
+      showDelivery(data.result.content_url, data.result.content_text, data.result.delivery_type);
+    } catch (e) {
+      alert('⚠ ' + e.message);
+      btn.disabled = false;
+      btn.innerHTML = '💰 Payer avec mon solde';
+    }
+  }
+
+  // ===== PAIEMENT VIA LEEKPAY =====
+  function openLeekpayModal() {
+    document.getElementById('payPhone').value = '';
+    document.getElementById('leekpayModal').classList.add('open');
+  }
+
+  async function payWithLeekpay() {
+    const qty = parseInt(document.getElementById('qty').value) || 1;
+    const phone = document.getElementById('payPhone').value.trim();
+
+    if (!phone) { alert('⚠ Numéro obligatoire'); return; }
+
+    const btn = document.getElementById('leekpayBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div>';
+
+    try {
+      const res = await fetch('/api/shop/order-with-leekpay', {
+        method: 'POST', headers: headers(),
+        body: JSON.stringify({ affiliate_code: affiliateCode, quantity: qty, phone: phone })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Erreur');
 
-      document.getElementById('productContent').style.display = 'none';
-      document.getElementById('successScreen').classList.add('show');
-
-      if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+      if (data.payment_url) {
+        localStorage.setItem('pending_shop_order', data.order_id);
+        window.location.href = data.payment_url;
+      } else {
+        throw new Error('URL de paiement manquante');
+      }
     } catch (e) {
       alert('⚠ ' + e.message);
       btn.disabled = false;
-      btn.textContent = '🛒 Commander';
+      btn.innerHTML = '<span>Payer</span>';
     }
   }
 
+  // ===== AFFICHER LE PRODUIT APRÈS PAIEMENT =====
+  function showDelivery(contentUrl, contentText, deliveryType) {
+    document.getElementById('productContent').style.display = 'none';
+    const box = document.getElementById('deliveryBox');
+    let html = '';
+
+    if (contentUrl) {
+      html += '<a href="' + contentUrl + '" target="_blank" class="delivery-link">' +
+        '<div class="icon">📥</div>' +
+        '<div>Télécharger / Accéder au produit</div>' +
+        '</a>';
+    }
+    if (contentText) {
+      html += '<div style="font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--green);">📋 Contenu / Instructions :</div>';
+      html += '<div class="delivery-text">' + escapeHtml(contentText) + '</div>';
+    }
+    if (!html) {
+      html = '<p style="text-align:center; font-size: 13px; color: #757575;">Le vendeur va vous contacter bientôt.</p>';
+    }
+    box.innerHTML = html;
+
+    document.getElementById('successScreen').classList.add('show');
+    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+  }
+
+  // ===== AU CHARGEMENT =====
   loadProduct();
 </script>
 </body>
