@@ -4,6 +4,7 @@ from app.routes import (
     admin,
     admin_content,
     admin_shop,
+    ads,
     affaires,
     auth,
     boost,
@@ -37,3 +38,4 @@ app.include_router(admin_content.router, prefix="/api/admin/content", tags=["Adm
 app.include_router(admin_shop.router, prefix="/api/admin/shop", tags=["AdminShop"])
 app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
 app.include_router(shop.router, prefix="/api/shop", tags=["Shop"])
+app.include_router(ads.router, prefix="/api/ads", tags=["Ads"])
