@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from app.templates.admin_content import HTML_ADMIN_CONTENT
 from app.templates.activation import HTML_ACTIVATION
 from app.templates.activation_success import HTML_ACTIVATION_SUCCESS
 from app.templates.admin import HTML_ADMIN
+from app.templates.admin_content import HTML_ADMIN_CONTENT
 from app.templates.affaire import HTML_AFFAIRE
 from app.templates.affilie import HTML_AFFILIE
 from app.templates.boost import HTML_BOOST
@@ -489,13 +489,21 @@ async def tourner_page():
     return HTML_TOURNER
 
 
+# ============================================================
+# ADMIN
+# ============================================================
 @router.get("/admin", response_class=HTMLResponse)
 async def admin_page():
     return HTML_ADMIN
 
 
+@router.get("/admin/content", response_class=HTMLResponse)
+async def admin_content_page():
+    return HTML_ADMIN_CONTENT
+
+
 # ============================================================
-# PLACEHOLDERS (pages pas encore créées)
+# PLACEHOLDERS
 # ============================================================
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_page():
