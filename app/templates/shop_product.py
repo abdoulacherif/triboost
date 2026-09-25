@@ -23,12 +23,12 @@ HTML_SHOP_PRODUCT = (
 
   .form-group { margin-bottom: 14px; }
   .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text-dark); }
-  .form-group input, .form-group textarea { width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; font-family: inherit; outline: none; background: #fff; }
+  .form-group input, .form-group textarea { width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; font-family: inherit; outline: none; background: #fff; box-sizing: border-box; }
   .form-group input:focus, .form-group textarea:focus { border-color: var(--green); }
 
   .qty-row { display: flex; align-items: center; gap: 10px; }
   .qty-btn { width: 40px; height: 40px; border-radius: 10px; background: var(--green-light); color: var(--green); border: none; font-size: 20px; font-weight: 900; cursor: pointer; font-family: inherit; }
-  .qty-input { flex: 1; text-align: center; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 16px; font-weight: 700; outline: none; }
+  .qty-input { flex: 1; text-align: center; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 16px; font-weight: 700; outline: none; min-width: 0; }
 
   .btn-order { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; border: none; padding: 18px; border-radius: 14px; font-weight: 900; font-size: 16px; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(46,125,50,0.3); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-order:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -37,8 +37,8 @@ HTML_SHOP_PRODUCT = (
   .total-line { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; border-bottom: 1px solid #f5f5f5; }
   .total-line.final { border-bottom: none; font-size: 18px; font-weight: 900; color: var(--green); margin-top: 6px; }
 
-  .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .lk-spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: lkspin 0.8s linear infinite; display: inline-block; }
+  @keyframes lkspin { to { transform: rotate(360deg); } }
 
   .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
   .empty-state .icon { font-size: 60px; margin-bottom: 16px; }
@@ -46,8 +46,8 @@ HTML_SHOP_PRODUCT = (
 
   .success-screen { display: none; padding: 30px 20px; text-align: center; }
   .success-screen.show { display: block; }
-  .success-icon { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 50px; margin: 0 auto 20px; animation: pop 0.5s ease; }
-  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  .success-icon { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 50px; margin: 0 auto 20px; animation: lkpop 0.5s ease; }
+  @keyframes lkpop { from { transform: scale(0); } to { transform: scale(1); } }
   .success-screen h2 { font-size: 22px; font-weight: 900; color: var(--text-dark); margin-bottom: 12px; }
   .success-screen p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
 
@@ -58,46 +58,53 @@ HTML_SHOP_PRODUCT = (
   .delivery-link .icon { width: 40px; height: 40px; border-radius: 10px; background: var(--green-light); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
   .delivery-text { background: #fff; padding: 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
 
-  /* MODAL LeekPay */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    z-index: 999;
+  /* ===== MODAL LEEKPAY (classes uniques préfixées lk-) ===== */
+  #lkModalOverlay {
     display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0,0,0,0.6);
+    z-index: 99999 !important;
     align-items: flex-end;
     justify-content: center;
+    box-sizing: border-box;
   }
-  .modal-overlay.open { display: flex; }
-  .modal-content {
-    width: 100%;
-    max-width: 480px;
+  #lkModalOverlay.lk-open {
+    display: flex !important;
+  }
+  .lk-modal-content {
     background: #fff;
     border-radius: 24px 24px 0 0;
+    max-width: 480px;
+    width: 100%;
     max-height: 92vh;
     overflow-y: auto;
-    padding: 20px 20px calc(20px + var(--safe-bottom));
-    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
+    padding: 20px 20px calc(20px + var(--safe-bottom, 0px));
+    box-sizing: border-box;
+    animation: lkslideup 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  @keyframes slideUp {
+  @keyframes lkslideup {
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
   }
-  .modal-handle {
+  .lk-modal-handle {
     width: 40px; height: 4px;
     background: #e0e0e0;
     border-radius: 2px;
     margin: 0 auto 16px;
   }
-  .modal-title {
+  .lk-modal-title {
     font-size: 18px; font-weight: 800;
     margin-bottom: 20px;
     display: flex; justify-content: space-between; align-items: center;
+    color: var(--text-dark);
   }
-  .modal-close {
+  .lk-modal-close {
     width: 32px; height: 32px;
     border-radius: 50%;
     background: #f5f5f5;
@@ -105,19 +112,20 @@ HTML_SHOP_PRODUCT = (
     display: flex; align-items: center; justify-content: center;
     color: var(--text-muted);
     font-size: 18px;
+    font-family: inherit;
   }
-  .modal-actions {
+  .lk-modal-actions {
     display: flex; gap: 10px;
     margin-top: 20px;
   }
-  .btn-cancel {
+  .lk-btn-cancel {
     flex: 1; background: #f5f5f5;
     color: var(--text-dark); border: none;
     padding: 14px; border-radius: 12px;
     font-weight: 700; font-size: 14px;
     font-family: inherit; cursor: pointer;
   }
-  .btn-submit {
+  .lk-btn-submit {
     flex: 2; background: var(--green);
     color: #fff; border: none;
     padding: 14px; border-radius: 12px;
@@ -125,9 +133,17 @@ HTML_SHOP_PRODUCT = (
     font-family: inherit; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .info-min { background: #fff8e1; border-left: 3px solid #fbc02d; border-radius: 10px; padding: 10px 12px; font-size: 11px; color: #6d4c00; margin-bottom: 14px; line-height: 1.5; }
+  .lk-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+  .lk-info-min {
+    background: #fff8e1;
+    border-left: 3px solid #fbc02d;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 11px;
+    color: #6d4c00;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -170,7 +186,7 @@ HTML_SHOP_PRODUCT = (
         💰 Payer avec mon solde
       </button>
 
-      <button class="btn-order gold" id="payLeekpayBtn" onclick="openLeekpayModal()" style="margin-top: 10px;">
+      <button class="btn-order gold" onclick="openLeekpayModal()" style="margin-top: 10px;">
         📱 Payer par Mobile Money
       </button>
 
@@ -184,30 +200,28 @@ HTML_SHOP_PRODUCT = (
     <div class="success-icon">✓</div>
     <h2>Paiement réussi !</h2>
     <p>Voici votre produit :</p>
-
     <div class="delivery-box" id="deliveryBox"></div>
-
     <button class="btn-order" onclick="location.href='/shop'">Retour au shop</button>
   </div>
 </div>
 
-<div class="modal-overlay" id="leekpayModal" onclick="if(event.target===this) closeLeekpayModal()">
-  <div class="modal-content">
-    <div class="modal-handle"></div>
-    <div class="modal-title">
+<div id="lkModalOverlay" onclick="if(event.target===this) closeLeekpayModal()">
+  <div class="lk-modal-content">
+    <div class="lk-modal-handle"></div>
+    <div class="lk-modal-title">
       <span>📱 Payer par Mobile Money</span>
-      <button class="modal-close" onclick="closeLeekpayModal()">✕</button>
+      <button class="lk-modal-close" onclick="closeLeekpayModal()">✕</button>
     </div>
-    <div class="info-min">
+    <div class="lk-info-min">
       💡 Vous serez redirigé vers LeekPay pour finaliser le paiement.
     </div>
     <div class="form-group">
       <label>Numéro Mobile Money *</label>
       <input type="tel" id="payPhone" placeholder="+237 6XX XXX XXX" inputmode="tel">
     </div>
-    <div class="modal-actions">
-      <button type="button" class="btn-cancel" onclick="closeLeekpayModal()">Annuler</button>
-      <button type="button" class="btn-submit" id="leekpayBtn" onclick="payWithLeekpay()">
+    <div class="lk-modal-actions">
+      <button type="button" class="lk-btn-cancel" onclick="closeLeekpayModal()">Annuler</button>
+      <button type="button" class="lk-btn-submit" id="leekpayBtn" onclick="payWithLeekpay()">
         <span>Payer <span id="modalTotal">-</span></span>
       </button>
     </div>
@@ -231,7 +245,11 @@ HTML_SHOP_PRODUCT = (
   function headers() { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
   function escapeHtml(s) { return s ? String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : ''; }
   function fmt(n) { return Number(n || 0).toLocaleString('fr-FR'); }
-  function closeLeekpayModal() { document.getElementById('leekpayModal').classList.remove('open'); }
+
+  function closeLeekpayModal() {
+    document.getElementById('lkModalOverlay').classList.remove('lk-open');
+    document.body.style.overflow = '';
+  }
 
   async function loadProduct() {
     try {
@@ -283,7 +301,7 @@ HTML_SHOP_PRODUCT = (
 
     const btn = document.getElementById('payWalletBtn');
     btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div>';
+    btn.innerHTML = '<div class="lk-spinner"></div>';
 
     try {
       const res = await fetch('/api/shop/order-with-wallet', {
@@ -305,8 +323,9 @@ HTML_SHOP_PRODUCT = (
   // ===== PAIEMENT VIA LEEKPAY =====
   function openLeekpayModal() {
     document.getElementById('payPhone').value = '';
-    document.getElementById('leekpayModal').classList.add('open');
     updateTotal();
+    document.getElementById('lkModalOverlay').classList.add('lk-open');
+    document.body.style.overflow = 'hidden';
   }
 
   async function payWithLeekpay() {
@@ -317,7 +336,7 @@ HTML_SHOP_PRODUCT = (
 
     const btn = document.getElementById('leekpayBtn');
     btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div>';
+    btn.innerHTML = '<div class="lk-spinner"></div>';
 
     try {
       const res = await fetch('/api/shop/order-with-leekpay', {
@@ -336,7 +355,7 @@ HTML_SHOP_PRODUCT = (
     } catch (e) {
       alert('⚠ ' + e.message);
       btn.disabled = false;
-      btn.innerHTML = '<span>Payer</span>';
+      btn.innerHTML = '<span>Payer <span id="modalTotal">' + fmt(affiliate.custom_price * qty) + ' F</span></span>';
     }
   }
 
