@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
+from app.templates.admin_content import HTML_ADMIN_CONTENT
 from app.templates.activation import HTML_ACTIVATION
 from app.templates.activation_success import HTML_ACTIVATION_SUCCESS
 from app.templates.admin import HTML_ADMIN
