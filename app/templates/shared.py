@@ -44,15 +44,16 @@ CSS_COMMUN = """
     overscroll-behavior: none;
     -webkit-font-smoothing: antialiased;
   }
+  /* ⚠️ SUPPRESSION de display:flex qui cassait les modals */
   body {
-    display: flex;
-    justify-content: center;
     padding-top: var(--safe-top);
     padding-bottom: var(--safe-bottom);
   }
+  /* Centrage via margin auto (au lieu de flex) */
   .wrap {
     width: 100%;
     max-width: 480px;
+    margin: 0 auto;
     padding: 24px 20px;
     display: flex;
     flex-direction: column;
@@ -297,12 +298,14 @@ JS_COMMUN = """
   }
   function showError(msg) {
     const el = document.getElementById('errorMsg');
+    if (!el) return;
     el.textContent = '⚠ ' + msg;
     el.style.display = 'block';
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   function showSuccess(msg) {
     const el = document.getElementById('successMsg');
+    if (!el) return;
     el.textContent = '✓ ' + msg;
     el.style.display = 'block';
   }
