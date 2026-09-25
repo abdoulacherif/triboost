@@ -133,14 +133,35 @@ async def update_balance(user_id: str, request: Request):
 
 @router.post("/users/{user_id}/toggle-activation")
 async def toggle_activation(user_id: str, request: Request):
+    """
+    Bascule l'activation d'un compte.
+    Si on active → utilise admin_activate_with_commissions (distribue les commissions)
+    Si on désactive → utilise admin_toggle_activation (simple bascule)
+    """
     try:
         admin_id = await _check_admin(request)
         admin = get_supabase_admin()
-        result = admin.rpc("admin_toggle_activation", {
-            "p_admin_id": admin_id,
-            "p_user_id": user_id,
-        }).execute()
-        return {"success": True, "result": result.data}
+
+        # Vérifier le statut actuel
+        current = admin.table("profiles").select("is_activated").eq("id", user_id).execute()
+        is_activated = bool(current.data[0].get("is_activated")) if current.data else False
+
+        if is_activated:
+            # Désactiver normalement
+            result = admin.rpc("admin_toggle_activation", {
+                "p_admin_id": admin_id,
+                "p_user_id": user_id,
+            }).execute()
+            message = "Compte désactivé"
+        else:
+            # Activer AVEC distribution des commissions
+            result = admin.rpc("admin_activate_with_commissions", {
+                "p_admin_id": admin_id,
+                "p_user_id": user_id,
+            }).execute()
+            message = "Compte activé + commissions distribuées"
+
+        return {"success": True, "result": result.data, "message": message}
     except HTTPException:
         raise
     except Exception as e:
