@@ -251,7 +251,6 @@ HTML_SHOP = (
     document.getElementById('affPrice').value = currentPrice;
     document.getElementById('affPrice').min = currentProduct.price;
 
-    const extra = currentPrice - currentProduct.price;
     document.getElementById('affInfo').innerHTML =
       'Prix minimum : <strong>' + fmt(currentProduct.price) + ' F</strong><br>' +
       'Votre commission de base : <strong>+' + fmt(currentProduct.commission) + ' F</strong><br>' +
@@ -298,17 +297,20 @@ HTML_SHOP = (
       }
 
       list.innerHTML = sales.map(s => {
-        const statusMap = { pending: '⏳ En attente', paid: '✓ Payée', delivered: '✓ Livrée', cancelled: '✗ Annulée' };
-        const colorMap = { pending: '#e65100', paid: '#2e7d32', delivered: '#2e7d32', cancelled: '#d32f2f' };
         const p = s.shop_products || {};
+        const statusLabel = { pending: '⏳ En attente', paid: '✓ Livré', cancelled: '✗ Annulé' }[s.status] || s.status;
+        const statusColor = { pending: '#e65100', paid: '#2e7d32', cancelled: '#d32f2f' }[s.status];
+
         return '<div class="aff-card">' +
-          '<div class="aff-title">' + escapeHtml(p.title || '') + '</div>' +
-          '<div class="aff-prices">👤 ' + escapeHtml(s.buyer_name) + ' · 📞 ' + escapeHtml(s.buyer_phone) + '</div>' +
-          '<div class="aff-prices">Quantité : ' + s.quantity + ' · Total : ' + fmt(s.total_paid) + ' F</div>' +
-          '<div class="aff-prices" style="color:' + colorMap[s.status] + ';">' + statusMap[s.status] + '</div>' +
+          '<div class="aff-title">' + escapeHtml(p.title || '') + ' × ' + s.quantity + '</div>' +
+          '<div class="aff-prices">👤 ' + escapeHtml(s.buyer_name || 'Client') + ' · 📞 ' + escapeHtml(s.buyer_phone || '') + '</div>' +
+          '<div class="aff-prices">Total : ' + fmt(s.total_paid) + ' F</div>' +
+          '<div class="aff-prices" style="color:' + statusColor + '; font-weight: 800;">' + statusLabel + '</div>' +
           '<div class="aff-stats">' +
           '<div class="aff-stat"><div class="val" style="color:#2e7d32;">+' + fmt(s.user_share) + ' F</div><div class="lbl">Ma part</div></div>' +
-          '</div></div>';
+          '<div class="aff-stat"><div class="val">' + fmt(s.total_paid) + ' F</div><div class="lbl">Total</div></div>' +
+          '</div>' +
+          '</div>';
       }).join('');
     } catch (e) {
       list.innerHTML = '<div class="empty-state"><h3>Erreur</h3></div>';
