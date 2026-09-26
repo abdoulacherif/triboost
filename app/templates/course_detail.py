@@ -25,6 +25,13 @@ HTML_COURSE_DETAIL = (
   .stat-box .v { font-size: 18px; font-weight: 900; color: var(--text-dark); line-height: 1; }
   .stat-box .l { font-size: 10px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; font-weight: 600; }
 
+  .inactive-banner { margin: 0 16px 16px; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 1.5px solid #ffb74d; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .inactive-banner .icon { width: 40px; height: 40px; border-radius: 12px; background: #ffe0b2; color: #e65100; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+  .inactive-banner .text { flex: 1; min-width: 0; }
+  .inactive-banner .title { font-size: 13px; font-weight: 800; color: #e65100; margin-bottom: 2px; }
+  .inactive-banner .desc { font-size: 11px; color: #bf360c; }
+  .inactive-banner .action { background: #e65100; color: #fff; border: none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0; font-family: inherit; }
+
   .progress-card { margin: 0 16px 16px; background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
   .progress-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px; }
   .progress-bar-bg { background: #f0f0f0; height: 10px; border-radius: 5px; overflow: hidden; }
@@ -36,15 +43,6 @@ HTML_COURSE_DETAIL = (
   .reward-chip.red .v { color: #d32f2f; }
   .reward-chip .l { font-size: 9px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
 
-  /* BANNIÈRE INACTIF */
-  .inactive-banner { margin: 0 16px 16px; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 1.5px solid #ffb74d; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
-  .inactive-banner .icon { width: 40px; height: 40px; border-radius: 12px; background: #ffe0b2; color: #e65100; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
-  .inactive-banner .text { flex: 1; min-width: 0; }
-  .inactive-banner .title { font-size: 13px; font-weight: 800; color: #e65100; margin-bottom: 2px; }
-  .inactive-banner .desc { font-size: 11px; color: #bf360c; }
-  .inactive-banner .action { background: #e65100; color: #fff; border: none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0; font-family: inherit; }
-
-  /* UNLOCK CARD */
   .unlock-card { margin: 0 16px 16px; background: linear-gradient(135deg, #fff8e1, #fffde7); border: 2px solid var(--gold); border-radius: 20px; padding: 24px 20px; text-align: center; box-shadow: 0 8px 20px rgba(251,192,45,0.25); }
   .unlock-price { font-size: 36px; font-weight: 900; color: #e65100; line-height: 1; margin: 12px 0 4px; }
   .unlock-price span { font-size: 16px; }
@@ -53,7 +51,8 @@ HTML_COURSE_DETAIL = (
   .btn-unlock:active { transform: scale(0.97); }
   .btn-unlock:disabled { opacity: 0.6; cursor: not-allowed; }
 
-  /* CHAPITRE */
+  .preview-note { margin: 0 16px 16px; background: #e3f2fd; border-left: 3px solid #1976d2; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #0d47a1; font-weight: 600; line-height: 1.5; }
+
   .chapter { margin: 0 16px 12px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); animation: slideIn 0.3s ease-out backwards; }
   @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .chapter-header { padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
@@ -64,12 +63,11 @@ HTML_COURSE_DETAIL = (
   .chapter-arrow { color: var(--text-muted); transition: transform 0.3s; font-size: 20px; }
   .chapter.open .chapter-arrow { transform: rotate(180deg); }
   .chapter-lessons { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
-  .chapter.open .chapter-lessons { max-height: 2000px; }
+  .chapter.open .chapter-lessons { max-height: 3000px; }
 
-  /* LEÇON */
   .lesson-item { padding: 14px 16px; border-top: 1px solid #f5f5f5; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
   .lesson-item:active { background: #f9f9f9; }
-  .lesson-status { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; font-weight: 900; }
+  .lesson-status { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px; font-weight: 900; }
   .lesson-status.done { background: var(--green); color: #fff; }
   .lesson-status.today { background: var(--gold); color: #212121; animation: pulse-gold 1.5s infinite; }
   .lesson-status.locked { background: #f5f5f5; color: #9e9e9e; }
@@ -77,62 +75,31 @@ HTML_COURSE_DETAIL = (
   .lesson-info { flex: 1; min-width: 0; }
   .lesson-title { font-size: 13px; font-weight: 700; color: var(--text-dark); }
   .lesson-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .lesson-btn { background: var(--green); color: #fff; border: none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 800; font-family: inherit; cursor: pointer; white-space: nowrap; }
-  .lesson-btn:disabled { background: #f5f5f5; color: #9e9e9e; cursor: not-allowed; }
+  .lesson-btn { background: var(--green); color: #fff; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: 800; font-family: inherit; cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
   .lesson-btn.locked { background: #f5f5f5; color: #9e9e9e; cursor: not-allowed; }
-
-  /* QUIZ */
-  #quizOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px; }
-  #quizOverlay.open { display: flex; }
-  .quiz-box { background: #fff; border-radius: 24px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; padding: 24px; box-sizing: border-box; animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-  @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .quiz-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .quiz-title { font-size: 16px; font-weight: 900; color: var(--text-dark); }
-  .quiz-close { width: 32px; height: 32px; border-radius: 50%; background: #f5f5f5; border: none; cursor: pointer; font-size: 16px; color: #757575; font-family: inherit; }
-  .quiz-content { background: #f9f9f9; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.6; color: var(--text-dark); margin-bottom: 16px; }
-  .q-item { background: #fff; border: 1.5px solid #e0e0e0; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
-  .q-text { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; line-height: 1.5; }
-  .q-opt { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; font-size: 13px; color: var(--text-dark); }
-  .q-opt.selected { border-color: var(--green); background: var(--green-light); font-weight: 700; }
-  .q-opt .circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e0e0e0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-  .q-opt.selected .circle { border-color: var(--green); background: var(--green); }
-  .q-opt.selected .circle::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 900; }
-  .quiz-submit { width: 100%; background: var(--green); color: #fff; border: none; padding: 16px; border-radius: 14px; font-weight: 900; font-size: 15px; font-family: inherit; cursor: pointer; margin-top: 8px; }
-  .quiz-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-  .result-box { text-align: center; padding: 20px 0; }
-  .result-icon { font-size: 64px; margin-bottom: 12px; }
-  .result-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
-  .result-title.win { color: var(--green); }
-  .result-title.lose { color: #d32f2f; }
-  .result-stats { display: flex; gap: 8px; margin: 16px 0; }
-  .result-stat { flex: 1; background: #f9f9f9; border-radius: 12px; padding: 12px; text-align: center; }
-  .result-stat .v { font-size: 20px; font-weight: 900; }
-  .result-stat .l { font-size: 10px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
-  .result-net { font-size: 28px; font-weight: 900; margin: 16px 0; }
-  .result-net.up { color: var(--green); }
-  .result-net.down { color: #d32f2f; }
-  .result-bonus { background: linear-gradient(135deg, #fff8e1, #fffde7); border: 2px solid var(--gold); border-radius: 14px; padding: 14px; margin: 16px 0; font-size: 13px; color: #6d4c00; font-weight: 700; }
+  .lesson-btn.today { background: linear-gradient(135deg, var(--gold), #f57c00); color: #212121; box-shadow: 0 4px 12px rgba(245,124,0,0.3); }
 
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
   .empty-state .icon { font-size: 60px; margin-bottom: 12px; }
   .empty-state h3 { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+  .empty-state p { font-size: 12px; line-height: 1.5; }
 
   .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2147483647; display: flex; flex-direction: column; gap: 10px; width: 340px; max-width: 90vw; }
-  .toast { padding: 16px 20px; border-radius: 16px; color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: toastIn 0.3s ease; }
+  .toast { padding: 16px 20px; border-radius: 16px; color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: toastIn 0.3s ease; line-height: 1.4; }
   .toast.success { background: linear-gradient(135deg, #2e7d32, #1b5e20); }
   .toast.error { background: linear-gradient(135deg, #d32f2f, #b71c1c); }
   .toast.warning { background: linear-gradient(135deg, #f57c00, #e65100); }
+  .toast.info { background: linear-gradient(135deg, #1976d2, #0d47a1); }
   @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* APERÇU */
-  .preview-badge { display: inline-block; background: #e3f2fd; color: #1976d2; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; margin-left: 8px; text-transform: uppercase; }
-  .preview-note { margin: 0 16px 16px; background: #e3f2fd; border-left: 3px solid #1976d2; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #0d47a1; font-weight: 600; line-height: 1.5; }
+  .section-label { padding: 0 16px 8px; font-size: 14px; font-weight: 800; color: var(--text-dark); }
 
   @media (min-width: 768px) {
     body { background: linear-gradient(135deg, #f0f4f0, #e8f5e9); padding: 20px 0; }
     .app { max-width: 900px; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); overflow: hidden; }
     .hero { padding: 40px 32px; }
     .hero-title { font-size: 32px; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 </head>
@@ -140,7 +107,7 @@ HTML_COURSE_DETAIL = (
 
 <div class="toast-container" id="toastContainer"></div>
 
-<div class="app" id="app">
+<div class="app">
   <header class="topbar">
     <div class="back-btn" onclick="history.back()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -152,10 +119,6 @@ HTML_COURSE_DETAIL = (
   <div id="loading" style="text-align:center;padding:80px 20px;color:#757575;">Chargement...</div>
 
   <div id="content" style="display:none;"></div>
-</div>
-
-<div id="quizOverlay">
-  <div class="quiz-box" id="quizBox"></div>
 </div>
 
 """
@@ -170,8 +133,6 @@ HTML_COURSE_DETAIL = (
   const pathId = pathParts[pathParts.length - 1];
 
   let currentPath = null;
-  let currentLesson = null;
-  let currentAnswers = {};
   let isActivated = false;
 
   function headers() { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
@@ -232,14 +193,14 @@ HTML_COURSE_DETAIL = (
           <div class="icon">🔒</div>
           <div class="text">
             <div class="title">Compte non activé</div>
-            <div class="desc">Activez pour débloquer</div>
+            <div class="desc">Activez pour débloquer ce parcours</div>
           </div>
           <button class="action" onclick="location.href='/activation'">Activer</button>
         </div>
       `;
     }
 
-    // Progression
+    // Progress
     let progressHTML = '';
     if (isUnlocked) {
       const completed = (p.completed_lesson_ids || []).length;
@@ -265,11 +226,11 @@ HTML_COURSE_DETAIL = (
       `;
     }
 
-    // Unlock card
+    // Unlock
     let unlockHTML = '';
     if (!isUnlocked) {
       let btnDisabled = isActivated ? '' : 'disabled';
-      let btnText = isActivated ? 'Débloquer maintenant' : '🔒 Activez votre compte d\\'abord';
+      let btnText = isActivated ? '🔓 Débloquer maintenant' : '🔒 Activez votre compte d\\'abord';
 
       unlockHTML = `
         <div class="unlock-card">
@@ -282,7 +243,7 @@ HTML_COURSE_DETAIL = (
       `;
     }
 
-    // Note preview si non débloqué
+    // Preview note
     let previewNoteHTML = '';
     if (!isUnlocked) {
       previewNoteHTML = `
@@ -336,9 +297,7 @@ HTML_COURSE_DETAIL = (
       ${unlockHTML}
       ${previewNoteHTML}
 
-      <div style="padding: 0 16px 8px; font-size: 14px; font-weight: 800; color: var(--text-dark);">
-        📖 Contenu du parcours
-      </div>
+      <div class="section-label">📖 Contenu du parcours</div>
 
       ${chaptersHTML}
 
@@ -355,24 +314,22 @@ HTML_COURSE_DETAIL = (
 
     let statusClass = 'locked';
     let statusIcon = '🔒';
-    let btnHTML = '<button class="lesson-btn locked" disabled>🔒</button>';
+    let btnHTML = '';
 
     if (isDone) {
       statusClass = 'done';
       statusIcon = '✓';
-      btnHTML = '<button class="lesson-btn" disabled>Terminé</button>';
+      btnHTML = '<span class="lesson-btn locked">✓ Terminé</span>';
     } else if (isToday) {
       statusClass = 'today';
       statusIcon = '▶';
-      btnHTML = `<button class="lesson-btn" onclick="startLesson('${l.id}')">Commencer</button>`;
+      btnHTML = `<a href="/parcours/${pathId}/lecon/${l.id}" class="lesson-btn today">Commencer →</a>`;
     } else if (isUnlocked) {
-      // Débloqué mais pas encore le jour → verrouillé temporairement
       statusClass = 'locked';
       statusIcon = '🔒';
-      btnHTML = `<button class="lesson-btn locked" disabled>Jour ${l.day_number}</button>`;
+      btnHTML = `<span class="lesson-btn locked">🔒 Jour ${l.day_number}</span>`;
     } else {
-      // Pas débloqué → tout verrouillé
-      btnHTML = '<button class="lesson-btn locked" disabled>🔒</button>';
+      btnHTML = '<span class="lesson-btn locked">🔒</span>';
     }
 
     return `
@@ -380,7 +337,7 @@ HTML_COURSE_DETAIL = (
         <div class="lesson-status ${statusClass}">${statusIcon}</div>
         <div class="lesson-info">
           <div class="lesson-title">${escapeHtml(l.title)}</div>
-          <div class="lesson-meta">Jour ${l.day_number} · +${fmt(l.gain_amount)} F / -${fmt(l.loss_amount)} F</div>
+          <div class="lesson-meta">Jour ${l.day_number} · ⏱ ${l.duration_minutes || 30} min · +${fmt(l.gain_amount)} / -${fmt(l.loss_amount)} F</div>
         </div>
         ${btnHTML}
       </div>
@@ -422,141 +379,8 @@ HTML_COURSE_DETAIL = (
     } catch (e) {
       showToast(e.message, 'error');
       btn.disabled = false;
-      btn.textContent = 'Débloquer maintenant';
+      btn.textContent = '🔓 Débloquer maintenant';
     }
-  }
-
-  // ===== DÉMARRER LEÇON =====
-  async function startLesson(lessonId) {
-    if (!isActivated) {
-      showToast('Compte non activé', 'error');
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/courses/lessons/' + lessonId + '/questions', { headers: headers() });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erreur');
-      currentLesson = data.lesson;
-      currentAnswers = {};
-      renderQuiz(data.questions || []);
-    } catch (e) {
-      showToast(e.message, 'error');
-    }
-  }
-
-  // ===== QUIZ =====
-  function renderQuiz(questions) {
-    const box = document.getElementById('quizBox');
-    box.innerHTML = `
-      <div class="quiz-head">
-        <div class="quiz-title">${escapeHtml(currentLesson.title)}</div>
-        <button class="quiz-close" onclick="closeQuiz()">✕</button>
-      </div>
-      ${currentLesson.content ? '<div class="quiz-content">' + escapeHtml(currentLesson.content) + '</div>' : ''}
-      ${currentLesson.content_url ? '<a href="' + currentLesson.content_url + '" target="_blank" style="display:block;padding:14px;background:#e8f5e9;border-radius:12px;text-decoration:none;color:#2e7d32;font-weight:700;font-size:13px;margin-bottom:16px;">📥 Voir le contenu complet</a>' : ''}
-      <div style="font-size:12px;color:#757575;margin-bottom:12px;">
-        📅 Jour ${currentLesson.day_number} · ✅ +${fmt(currentLesson.gain_amount)} F · ❌ -${fmt(currentLesson.loss_amount)} F
-      </div>
-      <div id="questionsList">
-        ${questions.map((q, i) => renderQuestion(q, i)).join('')}
-      </div>
-      <button class="quiz-submit" id="quizSubmitBtn" onclick="submitQuiz()">Valider mes réponses</button>
-    `;
-
-    document.getElementById('quizOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function renderQuestion(q, index) {
-    const opts = q.options || [];
-    return `
-      <div class="q-item">
-        <div class="q-text">${index + 1}. ${escapeHtml(q.question)}</div>
-        ${opts.map((opt, i) =>
-          `<div class="q-opt" onclick="selectAnswer('${q.id}', ${i}, this)">
-            <div class="circle"></div>
-            <div>${escapeHtml(opt)}</div>
-          </div>`
-        ).join('')}
-      </div>
-    `;
-  }
-
-  function selectAnswer(questionId, optionIndex, el) {
-    currentAnswers[questionId] = optionIndex;
-    el.closest('.q-item').querySelectorAll('.q-opt').forEach(o => o.classList.remove('selected'));
-    el.classList.add('selected');
-    if (navigator.vibrate) navigator.vibrate(5);
-  }
-
-  function closeQuiz() {
-    document.getElementById('quizOverlay').classList.remove('open');
-    document.body.style.overflow = '';
-    currentLesson = null;
-    currentAnswers = {};
-  }
-
-  async function submitQuiz() {
-    const answered = Object.keys(currentAnswers).length;
-    const totalQ = document.querySelectorAll('.q-item').length;
-
-    if (answered < totalQ) {
-      showToast('Répondez à toutes les questions (' + answered + '/' + totalQ + ')', 'warning');
-      return;
-    }
-
-    const btn = document.getElementById('quizSubmitBtn');
-    btn.disabled = true;
-    btn.textContent = 'Envoi...';
-
-    try {
-      const res = await fetch('/api/courses/lessons/' + currentLesson.id + '/submit', {
-        method: 'POST', headers: headers(),
-        body: JSON.stringify({ answers: currentAnswers })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erreur');
-      if (!data.result.success) throw new Error(data.result.message);
-
-      showResult(data.result);
-    } catch (e) {
-      showToast(e.message, 'error');
-      btn.disabled = false;
-      btn.textContent = 'Valider mes réponses';
-    }
-  }
-
-  function showResult(r) {
-    const isWin = r.net >= 0;
-    let bonusHTML = '';
-    if (r.path_completed) {
-      bonusHTML = '<div class="result-bonus">🎉 Parcours terminé !<br>Bonus final : +' + fmt(r.bonus) + ' F</div>';
-    }
-
-    document.getElementById('quizBox').innerHTML = `
-      <div class="result-box">
-        <div class="result-icon">${isWin ? '🎉' : '😢'}</div>
-        <div class="result-title ${isWin ? 'win' : 'lose'}">${isWin ? 'Bravo !' : 'Dommage...'}</div>
-        <div class="result-stats">
-          <div class="result-stat"><div class="v" style="color:#2e7d32;">${r.correct}</div><div class="l">Correct</div></div>
-          <div class="result-stat"><div class="v" style="color:#d32f2f;">${r.total - r.correct}</div><div class="l">Faux</div></div>
-          <div class="result-stat"><div class="v">${r.total}</div><div class="l">Total</div></div>
-        </div>
-        <div class="result-net ${isWin ? 'up' : 'down'}">
-          ${r.net >= 0 ? '+' : ''}${fmt(r.net)} F
-        </div>
-        ${bonusHTML}
-        <button class="quiz-submit" onclick="closeQuizAndReload()">Continuer</button>
-      </div>
-    `;
-
-    if (navigator.vibrate) navigator.vibrate(isWin ? [30, 50, 30] : [100, 50, 100]);
-  }
-
-  function closeQuizAndReload() {
-    closeQuiz();
-    loadPath();
   }
 
   // ===== INIT =====
