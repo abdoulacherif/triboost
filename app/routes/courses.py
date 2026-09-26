@@ -6,7 +6,35 @@ router = APIRouter()
 
 
 # ============================================================
-# LISTER LES PARCOURS AVEC PRIX
+# HELPER : VÉRIFIER ACTIVATION
+# ============================================================
+async def _check_activated(request: Request):
+    """Vérifie que l'utilisateur est connecté ET activé."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+
+    token = auth_header.replace("Bearer ", "")
+    user = get_supabase().auth.get_user(token)
+    if not user.user:
+        raise HTTPException(status_code=401, detail="Token invalide")
+
+    admin = get_supabase_admin()
+    profile = admin.table("profiles").select("is_activated").eq("id", user.user.id).execute()
+    raw = profile.data[0].get("is_activated") if profile.data else False
+    is_activated = raw is True or raw == "true" or raw == 1 or raw == "1"
+
+    if not is_activated:
+        raise HTTPException(
+            status_code=403,
+            detail="Compte non activé. Activez pour 3 600 FCFA pour accéder aux parcours."
+        )
+
+    return user.user.id
+
+
+# ============================================================
+# LISTER LES PARCOURS (accessible à tous les connectés)
 # ============================================================
 @router.get("/paths")
 async def list_paths(request: Request):
@@ -27,7 +55,6 @@ async def list_paths(request: Request):
                 pass
 
         for p in paths:
-            # Compter chapitres et leçons
             chapters = admin.table("course_chapters").select("id").eq("path_id", p["id"]).execute()
             chapter_ids = [c["id"] for c in (chapters.data or [])]
             p["chapters_count"] = len(chapter_ids)
@@ -38,7 +65,6 @@ async def list_paths(request: Request):
                 lessons_count = len(lessons.data or [])
             p["lessons_count"] = lessons_count
 
-            # Statut d'unlock
             p["is_unlocked"] = False
             p["completed_lessons"] = 0
             if user_id:
@@ -46,7 +72,6 @@ async def list_paths(request: Request):
                 if unlock.data and len(unlock.data) > 0:
                     p["is_unlocked"] = True
                     p["unlock_data"] = unlock.data[0]
-
                     prog = admin.table("lesson_progress").select("id").eq("user_id", user_id).eq("unlock_id", unlock.data[0]["id"]).execute()
                     p["completed_lessons"] = len(prog.data or [])
 
@@ -57,7 +82,7 @@ async def list_paths(request: Request):
 
 
 # ============================================================
-# DÉTAIL D'UN PARCOURS (chapitres + leçons + questions)
+# DÉTAIL D'UN PARCOURS (accessible à tous les connectés)
 # ============================================================
 @router.get("/paths/{path_id}")
 async def get_path_detail(path_id: str, request: Request):
@@ -70,11 +95,9 @@ async def get_path_detail(path_id: str, request: Request):
 
         p = path.data[0]
 
-        # Chapitres
         chapters_result = admin.table("course_chapters").select("*").eq("path_id", path_id).order("sort_order").execute()
         chapters = chapters_result.data or []
 
-        # Leçons pour chaque chapitre
         for ch in chapters:
             lessons = admin.table("course_lessons").select(
                 "id, title, content, content_url, day_number, gain_amount, loss_amount, sort_order"
@@ -83,7 +106,6 @@ async def get_path_detail(path_id: str, request: Request):
 
         p["chapters"] = chapters
 
-        # Statut user
         auth_header = request.headers.get("Authorization", "")
         user_id = None
         if auth_header.startswith("Bearer "):
@@ -125,31 +147,16 @@ async def get_path_detail(path_id: str, request: Request):
 
 
 # ============================================================
-# DÉBLOQUER UN PARCOURS
+# DÉBLOQUER UN PARCOURS (⚠️ COMPTE ACTIVÉ REQUIS)
 # ============================================================
 @router.post("/paths/{path_id}/unlock")
 async def unlock_path(path_id: str, request: Request):
     try:
-        auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Token manquant")
-
-        token = auth_header.replace("Bearer ", "")
-        user = get_supabase().auth.get_user(token)
-        if not user.user:
-            raise HTTPException(status_code=401, detail="Token invalide")
-
+        user_id = await _check_activated(request)
         admin = get_supabase_admin()
 
-        # Vérifier activation
-        profile = admin.table("profiles").select("is_activated").eq("id", user.user.id).execute()
-        raw = profile.data[0].get("is_activated") if profile.data else False
-        is_activated = raw is True or raw == "true" or raw == 1 or raw == "1"
-        if not is_activated:
-            raise HTTPException(status_code=403, detail="Compte non activé")
-
         result = admin.rpc("unlock_path", {
-            "p_user_id": user.user.id,
+            "p_user_id": user_id,
             "p_path_id": path_id,
         }).execute()
 
@@ -164,23 +171,14 @@ async def unlock_path(path_id: str, request: Request):
 
 
 # ============================================================
-# RÉCUPÉRER LES QUESTIONS D'UNE LEÇON
+# RÉCUPÉRER LES QUESTIONS (⚠️ COMPTE ACTIVÉ REQUIS)
 # ============================================================
 @router.get("/lessons/{lesson_id}/questions")
 async def get_lesson_questions(lesson_id: str, request: Request):
     try:
-        auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Token manquant")
-
-        token = auth_header.replace("Bearer ", "")
-        user = get_supabase().auth.get_user(token)
-        if not user.user:
-            raise HTTPException(status_code=401, detail="Token invalide")
-
+        user_id = await _check_activated(request)
         admin = get_supabase_admin()
 
-        # Vérifier que la leçon est débloquée
         lesson = admin.table("course_lessons").select("*").eq("id", lesson_id).execute()
         if not lesson.data:
             raise HTTPException(status_code=404, detail="Leçon introuvable")
@@ -192,16 +190,14 @@ async def get_lesson_questions(lesson_id: str, request: Request):
 
         path_id = chapter.data[0]["path_id"]
 
-        unlock = admin.table("path_unlocks").select("id").eq("user_id", user.user.id).eq("path_id", path_id).execute()
+        unlock = admin.table("path_unlocks").select("id").eq("user_id", user_id).eq("path_id", path_id).execute()
         if not unlock.data or len(unlock.data) == 0:
             raise HTTPException(status_code=403, detail="Parcours non débloqué")
 
-        # Vérifier déjà complétée
-        already = admin.table("lesson_progress").select("id").eq("user_id", user.user.id).eq("lesson_id", lesson_id).execute()
+        already = admin.table("lesson_progress").select("id").eq("user_id", user_id).eq("lesson_id", lesson_id).execute()
         if already.data and len(already.data) > 0:
             raise HTTPException(status_code=400, detail="Leçon déjà terminée")
 
-        # Récupérer les questions (SANS révéler la bonne réponse)
         questions = admin.table("lesson_questions").select("id, question, options, sort_order").eq("lesson_id", lesson_id).order("sort_order").execute()
 
         return {
@@ -224,26 +220,19 @@ async def get_lesson_questions(lesson_id: str, request: Request):
 
 
 # ============================================================
-# SOUMETTRE LES RÉPONSES
+# SOUMETTRE LES RÉPONSES (⚠️ COMPTE ACTIVÉ REQUIS)
 # ============================================================
 @router.post("/lessons/{lesson_id}/submit")
 async def submit_answers(lesson_id: str, request: Request):
     try:
-        auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Token manquant")
-
-        token = auth_header.replace("Bearer ", "")
-        user = get_supabase().auth.get_user(token)
-        if not user.user:
-            raise HTTPException(status_code=401, detail="Token invalide")
+        user_id = await _check_activated(request)
+        admin = get_supabase_admin()
 
         body = await request.json()
         answers = body.get("answers", {})
 
-        admin = get_supabase_admin()
         result = admin.rpc("submit_lesson_answers", {
-            "p_user_id": user.user.id,
+            "p_user_id": user_id,
             "p_lesson_id": lesson_id,
             "p_answers": answers,
         }).execute()
