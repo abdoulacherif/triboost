@@ -18,6 +18,7 @@ from app.templates.dashboard import HTML_DASHBOARD
 from app.templates.formation import HTML_FORMATION
 from app.templates.formation_detail import HTML_FORMATION_DETAIL
 from app.templates.historique import HTML_HISTORIQUE
+from app.templates.lesson_detail import HTML_LESSON_DETAIL
 from app.templates.login import HTML_LOGIN
 from app.templates.marche import HTML_MARCHE
 from app.templates.profil_public import HTML_PROFIL_PUBLIC
@@ -484,6 +485,12 @@ async def paiements_page():
 @router.get("/formation", response_class=HTMLResponse)
 async def formation_page():
     return HTML_FORMATION
+
+
+# ⚠️ IMPORTANT : /parcours/{id}/lecon/{lesson_id} AVANT /parcours/{id}
+@router.get("/parcours/{path_id}/lecon/{lesson_id}", response_class=HTMLResponse)
+async def lesson_detail_page(path_id: str, lesson_id: str):
+    return HTML_LESSON_DETAIL
 
 
 @router.get("/parcours/{path_id}", response_class=HTMLResponse)
