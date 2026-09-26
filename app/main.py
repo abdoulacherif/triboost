@@ -13,6 +13,7 @@ from app.routes import (
     courses,
     formations,
     history,
+    lesson_api,
     marketplace,
     network,
     pages,
@@ -46,3 +47,4 @@ app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
 app.include_router(shop.router, prefix="/api/shop", tags=["Shop"])
 app.include_router(ads.router, prefix="/api/ads", tags=["Ads"])
 app.include_router(courses.router, prefix="/api/courses", tags=["Courses"])
+app.include_router(lesson_api.router, prefix="/api/lesson", tags=["LessonAPI"])
