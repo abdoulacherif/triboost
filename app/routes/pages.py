@@ -5,6 +5,7 @@ from app.templates.activation import HTML_ACTIVATION
 from app.templates.activation_success import HTML_ACTIVATION_SUCCESS
 from app.templates.admin import HTML_ADMIN
 from app.templates.admin_content import HTML_ADMIN_CONTENT
+from app.templates.admin_courses import HTML_ADMIN_COURSES
 from app.templates.admin_shop import HTML_ADMIN_SHOP
 from app.templates.affaire import HTML_AFFAIRE
 from app.templates.affilie import HTML_AFFILIE
@@ -12,6 +13,7 @@ from app.templates.boost import HTML_BOOST
 from app.templates.boutique import HTML_BOUTIQUE
 from app.templates.chat import HTML_CHAT
 from app.templates.commissions import HTML_COMMISSIONS
+from app.templates.course_detail import HTML_COURSE_DETAIL
 from app.templates.dashboard import HTML_DASHBOARD
 from app.templates.formation import HTML_FORMATION
 from app.templates.formation_detail import HTML_FORMATION_DETAIL
@@ -484,6 +486,11 @@ async def formation_page():
     return HTML_FORMATION
 
 
+@router.get("/parcours/{path_id}", response_class=HTMLResponse)
+async def course_detail_page(path_id: str):
+    return HTML_COURSE_DETAIL
+
+
 @router.get("/tourner", response_class=HTMLResponse)
 async def tourner_page():
     return HTML_TOURNER
@@ -531,6 +538,11 @@ async def admin_content_page():
 @router.get("/admin/shop", response_class=HTMLResponse)
 async def admin_shop_page():
     return HTML_ADMIN_SHOP
+
+
+@router.get("/admin/courses", response_class=HTMLResponse)
+async def admin_courses_page():
+    return HTML_ADMIN_COURSES
 
 
 # ============================================================
