@@ -3,12 +3,14 @@ from fastapi import FastAPI
 from app.routes import (
     admin,
     admin_content,
+    admin_courses,
     admin_shop,
     ads,
     affaires,
     auth,
     boost,
     chat,
+    courses,
     formations,
     history,
     marketplace,
@@ -39,6 +41,8 @@ app.include_router(wheel.router, prefix="/api/wheel", tags=["Wheel"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(admin_content.router, prefix="/api/admin/content", tags=["AdminContent"])
 app.include_router(admin_shop.router, prefix="/api/admin/shop", tags=["AdminShop"])
+app.include_router(admin_courses.router, prefix="/api/admin/courses", tags=["AdminCourses"])
 app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
 app.include_router(shop.router, prefix="/api/shop", tags=["Shop"])
 app.include_router(ads.router, prefix="/api/ads", tags=["Ads"])
+app.include_router(courses.router, prefix="/api/courses", tags=["Courses"])
