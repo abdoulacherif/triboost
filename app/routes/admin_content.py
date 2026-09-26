@@ -1,3 +1,6 @@
+import base64
+import uuid
+
 from fastapi import APIRouter, HTTPException, Request
 
 from app.core.supabase_client import get_supabase, get_supabase_admin
@@ -18,6 +21,39 @@ async def _check_admin(request: Request) -> str:
     if not check.data or not check.data[0].get("is_admin"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     return user.user.id
+
+
+# ============================================================
+# UPLOAD IMAGE (helper)
+# ============================================================
+def _upload_image(admin, base64_str: str, folder: str = "covers") -> str:
+    """Upload une image base64 vers Supabase Storage, retourne l'URL publique."""
+    try:
+        header, b64data = base64_str.split(",", 1)
+        ext = "jpg"
+        if "png" in header:
+            ext = "png"
+        elif "webp" in header:
+            ext = "webp"
+        elif "gif" in header:
+            ext = "gif"
+
+        img_bytes = base64.b64decode(b64data)
+        if len(img_bytes) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Image trop lourde (max 5 MB)")
+
+        filename = f"{folder}/{uuid.uuid4().hex}.{ext}"
+        admin.storage.from_("formations").upload(
+            path=filename,
+            file=img_bytes,
+            file_options={"content-type": f"image/{ext}"},
+        )
+        return admin.storage.from_("formations").get_public_url(filename)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[UPLOAD] Erreur: {e}")
+        return ""
 
 
 # ============================================================
@@ -108,7 +144,7 @@ async def admin_ban_market(item_id: str, request: Request):
 
 
 # ============================================================
-# SERVICES DIGITAUX
+# SERVICES
 # ============================================================
 @router.get("/services")
 async def admin_list_services(request: Request):
@@ -229,7 +265,7 @@ async def admin_list_formations(request: Request):
         await _check_admin(request)
         admin = get_supabase_admin()
         result = admin.table("formations").select(
-            "id, title, description, category, cover_url, content_url, duration, level, price, is_free, is_published, is_banned, views, created_at"
+            "id, title, description, category, cover_url, content_url, content_text, duration, level, price, is_free, is_published, is_banned, views, created_at"
         ).order("created_at", desc=True).limit(50).execute()
         return {"success": True, "items": result.data or []}
     except HTTPException:
@@ -248,11 +284,18 @@ async def admin_create_formation(request: Request):
         if not body.get("title"):
             raise HTTPException(status_code=400, detail="Titre obligatoire")
 
+        # Image : upload depuis base64 OU utiliser l'URL fournie
+        cover_url = body.get("cover_url", "") or ""
+        if body.get("image_base64"):
+            uploaded = _upload_image(admin, body["image_base64"], "covers")
+            if uploaded:
+                cover_url = uploaded
+
         result = admin.table("formations").insert({
             "title": body.get("title", ""),
             "description": body.get("description", ""),
             "category": body.get("category", "autre"),
-            "cover_url": body.get("cover_url", ""),
+            "cover_url": cover_url,
             "content_url": body.get("content_url", ""),
             "content_text": body.get("content_text", ""),
             "duration": body.get("duration", ""),
@@ -278,9 +321,18 @@ async def admin_update_formation(formation_id: str, request: Request):
         admin = get_supabase_admin()
 
         update_data = {}
-        for f in ["title", "description", "category", "cover_url", "content_url", "content_text", "duration", "level", "author"]:
+        for f in ["title", "description", "category", "content_url", "content_text", "duration", "level", "author"]:
             if f in body:
                 update_data[f] = body[f]
+
+        # Image : upload si base64, sinon URL fournie
+        if body.get("image_base64"):
+            uploaded = _upload_image(admin, body["image_base64"], "covers")
+            if uploaded:
+                update_data["cover_url"] = uploaded
+        elif "cover_url" in body:
+            update_data["cover_url"] = body["cover_url"]
+
         if "price" in body:
             update_data["price"] = float(body["price"])
         if "is_free" in body:
