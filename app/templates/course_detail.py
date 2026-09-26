@@ -36,6 +36,15 @@ HTML_COURSE_DETAIL = (
   .reward-chip.red .v { color: #d32f2f; }
   .reward-chip .l { font-size: 9px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
 
+  /* BANNIÈRE INACTIF */
+  .inactive-banner { margin: 0 16px 16px; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 1.5px solid #ffb74d; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .inactive-banner .icon { width: 40px; height: 40px; border-radius: 12px; background: #ffe0b2; color: #e65100; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+  .inactive-banner .text { flex: 1; min-width: 0; }
+  .inactive-banner .title { font-size: 13px; font-weight: 800; color: #e65100; margin-bottom: 2px; }
+  .inactive-banner .desc { font-size: 11px; color: #bf360c; }
+  .inactive-banner .action { background: #e65100; color: #fff; border: none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0; font-family: inherit; }
+
+  /* UNLOCK CARD */
   .unlock-card { margin: 0 16px 16px; background: linear-gradient(135deg, #fff8e1, #fffde7); border: 2px solid var(--gold); border-radius: 20px; padding: 24px 20px; text-align: center; box-shadow: 0 8px 20px rgba(251,192,45,0.25); }
   .unlock-price { font-size: 36px; font-weight: 900; color: #e65100; line-height: 1; margin: 12px 0 4px; }
   .unlock-price span { font-size: 16px; }
@@ -44,6 +53,7 @@ HTML_COURSE_DETAIL = (
   .btn-unlock:active { transform: scale(0.97); }
   .btn-unlock:disabled { opacity: 0.6; cursor: not-allowed; }
 
+  /* CHAPITRE */
   .chapter { margin: 0 16px 12px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); animation: slideIn 0.3s ease-out backwards; }
   @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .chapter-header { padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
@@ -56,6 +66,7 @@ HTML_COURSE_DETAIL = (
   .chapter-lessons { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
   .chapter.open .chapter-lessons { max-height: 2000px; }
 
+  /* LEÇON */
   .lesson-item { padding: 14px 16px; border-top: 1px solid #f5f5f5; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
   .lesson-item:active { background: #f9f9f9; }
   .lesson-status { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; font-weight: 900; }
@@ -68,7 +79,9 @@ HTML_COURSE_DETAIL = (
   .lesson-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
   .lesson-btn { background: var(--green); color: #fff; border: none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 800; font-family: inherit; cursor: pointer; white-space: nowrap; }
   .lesson-btn:disabled { background: #f5f5f5; color: #9e9e9e; cursor: not-allowed; }
+  .lesson-btn.locked { background: #f5f5f5; color: #9e9e9e; cursor: not-allowed; }
 
+  /* QUIZ */
   #quizOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px; }
   #quizOverlay.open { display: flex; }
   .quiz-box { background: #fff; border-radius: 24px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; padding: 24px; box-sizing: border-box; animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -111,13 +124,9 @@ HTML_COURSE_DETAIL = (
   .toast.warning { background: linear-gradient(135deg, #f57c00, #e65100); }
   @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* BLOQUÉ */
-  .locked-screen { padding: 60px 24px; text-align: center; min-height: 70vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-  .locked-icon { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: #e65100; display: flex; align-items: center; justify-content: center; font-size: 60px; margin-bottom: 24px; animation: pulse-lock 2s infinite; }
-  @keyframes pulse-lock { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-  .locked-title { font-size: 22px; font-weight: 900; color: var(--text-dark); margin-bottom: 12px; }
-  .locked-text { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 32px; max-width: 320px; }
-  .locked-btn { background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; padding: 16px 32px; border-radius: 14px; text-decoration: none; font-weight: 900; font-size: 15px; box-shadow: 0 6px 20px rgba(46,125,50,0.3); display: inline-flex; align-items: center; gap: 8px; }
+  /* APERÇU */
+  .preview-badge { display: inline-block; background: #e3f2fd; color: #1976d2; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; margin-left: 8px; text-transform: uppercase; }
+  .preview-note { margin: 0 16px 16px; background: #e3f2fd; border-left: 3px solid #1976d2; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #0d47a1; font-weight: 600; line-height: 1.5; }
 
   @media (min-width: 768px) {
     body { background: linear-gradient(135deg, #f0f4f0, #e8f5e9); padding: 20px 0; }
@@ -193,24 +202,6 @@ HTML_COURSE_DETAIL = (
     } catch (e) {}
   }
 
-  // ===== BLOCAGE SI NON ACTIVÉ =====
-  function renderLocked() {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('content').style.display = 'block';
-    document.getElementById('content').innerHTML = `
-      <div class="locked-screen">
-        <div class="locked-icon">🔒</div>
-        <div class="locked-title">Compte non activé</div>
-        <div class="locked-text">
-          Pour accéder aux parcours et gagner de l'argent, vous devez d'abord activer votre compte pour <strong>3 600 FCFA</strong>.
-        </div>
-        <a href="/activation" class="locked-btn">
-          🔓 Activer mon compte
-        </a>
-      </div>
-    `;
-  }
-
   // ===== CHARGER LE PARCOURS =====
   async function loadPath() {
     try {
@@ -230,11 +221,27 @@ HTML_COURSE_DETAIL = (
     document.getElementById('content').style.display = 'block';
 
     const p = currentPath;
-
+    const isUnlocked = p.is_unlocked || false;
     const totalLessons = (p.chapters || []).reduce((sum, c) => sum + (c.lessons || []).length, 0);
 
+    // Bannière inactif
+    let inactiveBannerHTML = '';
+    if (!isActivated) {
+      inactiveBannerHTML = `
+        <div class="inactive-banner">
+          <div class="icon">🔒</div>
+          <div class="text">
+            <div class="title">Compte non activé</div>
+            <div class="desc">Activez pour débloquer</div>
+          </div>
+          <button class="action" onclick="location.href='/activation'">Activer</button>
+        </div>
+      `;
+    }
+
+    // Progression
     let progressHTML = '';
-    if (p.is_unlocked) {
+    if (isUnlocked) {
       const completed = (p.completed_lesson_ids || []).length;
       const pct = totalLessons > 0 ? Math.round((completed / totalLessons) * 100) : 0;
       progressHTML = `
@@ -258,25 +265,39 @@ HTML_COURSE_DETAIL = (
       `;
     }
 
+    // Unlock card
     let unlockHTML = '';
-    if (!p.is_unlocked) {
+    if (!isUnlocked) {
+      let btnDisabled = isActivated ? '' : 'disabled';
+      let btnText = isActivated ? 'Débloquer maintenant' : '🔒 Activez votre compte d\\'abord';
+
       unlockHTML = `
         <div class="unlock-card">
           <div style="font-size: 40px;">🔒</div>
           <div style="font-size: 13px; color: #6d4c00; font-weight: 700; margin-top: 8px;">Débloquez ce parcours pour</div>
           <div class="unlock-price">${fmt(p.unlock_price || 5000)} <span>FCFA</span></div>
           <div class="unlock-sub">${totalLessons} leçons · ${fmt(p.final_bonus || 500)} F de bonus final</div>
-          <button class="btn-unlock" id="unlockBtn" onclick="unlockPath()">Débloquer maintenant</button>
+          <button class="btn-unlock" id="unlockBtn" onclick="unlockPath()" ${btnDisabled}>${btnText}</button>
         </div>
       `;
     }
 
+    // Note preview si non débloqué
+    let previewNoteHTML = '';
+    if (!isUnlocked) {
+      previewNoteHTML = `
+        <div class="preview-note">
+          👁️ Aperçu du contenu · Les leçons sont visibles mais restent verrouillées jusqu'au déblocage.
+        </div>
+      `;
+    }
+
+    // Chapitres
     let chaptersHTML = '';
     if (p.chapters && p.chapters.length > 0) {
       chaptersHTML = p.chapters.map((ch, idx) => {
         const lessons = ch.lessons || [];
         const completed = lessons.filter(l => (p.completed_lesson_ids || []).indexOf(l.id) !== -1).length;
-
         const lessonsHTML = lessons.map(l => renderLesson(l, p)).join('');
 
         return `
@@ -285,7 +306,7 @@ HTML_COURSE_DETAIL = (
               <div class="chapter-num">${idx + 1}</div>
               <div class="chapter-info">
                 <div class="chapter-title">${escapeHtml(ch.title)}</div>
-                <div class="chapter-meta">${completed} / ${lessons.length} leçons</div>
+                <div class="chapter-meta">${lessons.length} leçon(s)${isUnlocked ? ' · ' + completed + ' terminée(s)' : ''}</div>
               </div>
               <div class="chapter-arrow">▾</div>
             </div>
@@ -294,7 +315,7 @@ HTML_COURSE_DETAIL = (
         `;
       }).join('');
     } else {
-      chaptersHTML = '<div class="empty-state"><div class="icon">📚</div><h3>Aucune leçon</h3><p>Le parcours sera bientôt disponible.</p></div>';
+      chaptersHTML = '<div class="empty-state"><div class="icon">📚</div><h3>Aucune leçon</h3><p>Le contenu sera bientôt disponible.</p></div>';
     }
 
     document.getElementById('content').innerHTML = `
@@ -310,22 +331,31 @@ HTML_COURSE_DETAIL = (
         <div class="stat-box"><div class="v">${fmt(p.final_bonus || 500)} F</div><div class="l">Bonus</div></div>
       </div>
 
+      ${inactiveBannerHTML}
       ${progressHTML}
       ${unlockHTML}
+      ${previewNoteHTML}
+
+      <div style="padding: 0 16px 8px; font-size: 14px; font-weight: 800; color: var(--text-dark);">
+        📖 Contenu du parcours
+      </div>
+
       ${chaptersHTML}
 
       <div style="height: 40px;"></div>
     `;
   }
 
+  // ===== RENDER LEÇON =====
   function renderLesson(l, p) {
+    const isUnlocked = p.is_unlocked || false;
     const isDone = (p.completed_lesson_ids || []).indexOf(l.id) !== -1;
     const lastDay = p.last_day || 0;
-    const isToday = p.is_unlocked && !isDone && l.day_number === lastDay + 1;
+    const isToday = isUnlocked && !isDone && l.day_number === lastDay + 1;
 
     let statusClass = 'locked';
     let statusIcon = '🔒';
-    let btnHTML = '<button class="lesson-btn" disabled>Bloqué</button>';
+    let btnHTML = '<button class="lesson-btn locked" disabled>🔒</button>';
 
     if (isDone) {
       statusClass = 'done';
@@ -335,8 +365,14 @@ HTML_COURSE_DETAIL = (
       statusClass = 'today';
       statusIcon = '▶';
       btnHTML = `<button class="lesson-btn" onclick="startLesson('${l.id}')">Commencer</button>`;
-    } else if (!p.is_unlocked) {
-      btnHTML = '<button class="lesson-btn" disabled>Débloquer</button>';
+    } else if (isUnlocked) {
+      // Débloqué mais pas encore le jour → verrouillé temporairement
+      statusClass = 'locked';
+      statusIcon = '🔒';
+      btnHTML = `<button class="lesson-btn locked" disabled>Jour ${l.day_number}</button>`;
+    } else {
+      // Pas débloqué → tout verrouillé
+      btnHTML = '<button class="lesson-btn locked" disabled>🔒</button>';
     }
 
     return `
@@ -351,6 +387,7 @@ HTML_COURSE_DETAIL = (
     `;
   }
 
+  // ===== TOGGLE CHAPITRE =====
   function toggleChapter(id) {
     const el = document.getElementById('chapter-' + id);
     if (el) el.classList.toggle('open');
@@ -360,7 +397,7 @@ HTML_COURSE_DETAIL = (
   // ===== DÉBLOQUER =====
   async function unlockPath() {
     if (!isActivated) {
-      showToast('Compte non activé', 'error');
+      showToast('Activez votre compte d\\'abord', 'error');
       setTimeout(() => location.href = '/activation', 1000);
       return;
     }
@@ -408,6 +445,7 @@ HTML_COURSE_DETAIL = (
     }
   }
 
+  // ===== QUIZ =====
   function renderQuiz(questions) {
     const box = document.getElementById('quizBox');
     box.innerHTML = `
@@ -418,7 +456,7 @@ HTML_COURSE_DETAIL = (
       ${currentLesson.content ? '<div class="quiz-content">' + escapeHtml(currentLesson.content) + '</div>' : ''}
       ${currentLesson.content_url ? '<a href="' + currentLesson.content_url + '" target="_blank" style="display:block;padding:14px;background:#e8f5e9;border-radius:12px;text-decoration:none;color:#2e7d32;font-weight:700;font-size:13px;margin-bottom:16px;">📥 Voir le contenu complet</a>' : ''}
       <div style="font-size:12px;color:#757575;margin-bottom:12px;">
-        📅 Jour ${currentLesson.day_number} · ✅ Bonne = +${fmt(currentLesson.gain_amount)} F · ❌ Mauvaise = -${fmt(currentLesson.loss_amount)} F
+        📅 Jour ${currentLesson.day_number} · ✅ +${fmt(currentLesson.gain_amount)} F · ❌ -${fmt(currentLesson.loss_amount)} F
       </div>
       <div id="questionsList">
         ${questions.map((q, i) => renderQuestion(q, i)).join('')}
@@ -524,11 +562,7 @@ HTML_COURSE_DETAIL = (
   // ===== INIT =====
   (async function() {
     await loadProfile();
-    if (!isActivated) {
-      renderLocked();
-    } else {
-      loadPath();
-    }
+    loadPath();
   })();
 </script>
 </body>
