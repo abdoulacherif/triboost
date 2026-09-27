@@ -13,10 +13,12 @@ from app.templates.boost import HTML_BOOST
 from app.templates.boutique import HTML_BOUTIQUE
 from app.templates.chat import HTML_CHAT
 from app.templates.commissions import HTML_COMMISSIONS
+from app.templates.contact import HTML_CONTACT
 from app.templates.course_detail import HTML_COURSE_DETAIL
 from app.templates.dashboard import HTML_DASHBOARD
 from app.templates.formation import HTML_FORMATION
 from app.templates.formation_detail import HTML_FORMATION_DETAIL
+from app.templates.groupe import HTML_GROUPE
 from app.templates.historique import HTML_HISTORIQUE
 from app.templates.lesson_detail import HTML_LESSON_DETAIL
 from app.templates.login import HTML_LOGIN
@@ -506,6 +508,19 @@ async def tourner_page():
 @router.get("/chat", response_class=HTMLResponse)
 async def chat_page():
     return HTML_CHAT
+
+
+# ============================================================
+# SUPPORT (CONTACT / GROUPE)
+# ============================================================
+@router.get("/contact", response_class=HTMLResponse)
+async def contact_page():
+    return HTML_CONTACT
+
+
+@router.get("/groupe", response_class=HTMLResponse)
+async def groupe_page():
+    return HTML_GROUPE
 
 
 # ============================================================
