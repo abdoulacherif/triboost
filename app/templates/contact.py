@@ -100,6 +100,16 @@ HTML_CONTACT = (
   .empty-state {
     text-align: center; padding: 30px 20px; color: #9e9e9e; font-size: 13px;
   }
+
+  .download-all-wrap { padding: 0 20px 16px; }
+  .download-all-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; background: #f5f5f5; color: #212121;
+    border: none; padding: 13px; border-radius: 14px;
+    font-weight: 700; font-size: 13px; cursor: pointer;
+    font-family: inherit;
+  }
+  .download-all-btn:active { transform: scale(0.98); }
 </style>
 </head>
 <body>
@@ -138,6 +148,17 @@ HTML_CONTACT = (
     </div>
     <h2>Nos contacts</h2>
     <p>Contactez directement l'un de nos représentants ou téléchargez sa fiche contact.</p>
+  </div>
+
+  <div class="download-all-wrap">
+    <button class="download-all-btn" onclick="handleDownloadAll()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Télécharger tous les contacts
+    </button>
   </div>
 
   <div class="contacts-list" id="contactsList"></div>
@@ -211,7 +232,6 @@ HTML_CONTACT = (
         </div>
         <div class="contact-card-text">
           <div class="title">${c.name}</div>
-          <div class="desc">${c.role || ''}</div>
         </div>
         <div class="contact-actions">
           <button class="mini-btn mini-btn-green" onclick="handleContact(${i})">Contacter</button>
@@ -231,12 +251,37 @@ HTML_CONTACT = (
   function handleDownload(i) {
     if (!isActivated) { showInactiveToast(); return; }
     const c = CONTACTS[i];
-    const vcard = 'BEGIN:VCARD\\nVERSION:3.0\\nFN:' + c.name + '\\nTEL;TYPE=CELL:' + c.phone + '\\nEND:VCARD';
+    const vcard = 'BEGIN:VCARD\\nVERSION:3.0\\nFN:' + c.name +
+      (c.business ? '\\nORG:' + c.business : '') +
+      '\\nTEL;TYPE=CELL:' + c.phone +
+      (c.city ? '\\nADR:;;' + c.city + ';' + (c.country || '') + ';;;' : '') +
+      '\\nEND:VCARD';
     const blob = new Blob([vcard], { type: 'text/vcard' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = c.name.replace(/\\s+/g, '_') + '.vcf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleDownloadAll() {
+    if (!isActivated) { showInactiveToast(); return; }
+    if (!CONTACTS.length) return;
+    const vcard = CONTACTS.map((c) =>
+      'BEGIN:VCARD\\nVERSION:3.0\\nFN:' + c.name +
+      (c.business ? '\\nORG:' + c.business : '') +
+      '\\nTEL;TYPE=CELL:' + c.phone +
+      (c.city ? '\\nADR:;;' + c.city + ';' + (c.country || '') + ';;;' : '') +
+      '\\nEND:VCARD'
+    ).join('\\n');
+    const blob = new Blob([vcard], { type: 'text/vcard' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'contacts_triboost.vcf';
     document.body.appendChild(a);
     a.click();
     a.remove();
