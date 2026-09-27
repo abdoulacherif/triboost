@@ -465,6 +465,60 @@ HTML_DASHBOARD = (
   .debug-panel .val-true { color: #00ff00; font-weight: bold; }
   .debug-panel .val-false { color: #ff6666; font-weight: bold; }
   .debug-panel .val-null { color: #ff9900; font-weight: bold; }
+
+  /* ===== POPUP BIENVENUE ===== */
+  .welcome-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 10050;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .welcome-modal-overlay.show { opacity: 1; pointer-events: auto; }
+  .welcome-modal {
+    background: #fff; border-radius: 24px;
+    max-width: 360px; width: 100%;
+    padding: 28px 24px 24px;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .welcome-modal-overlay.show .welcome-modal { transform: scale(1); }
+  .welcome-modal-close {
+    position: absolute; top: 12px; right: 12px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #f5f5f5; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #757575;
+  }
+  .welcome-modal-close:active { transform: scale(0.9); }
+  .welcome-modal-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--green-light); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .welcome-modal h3 { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+  .welcome-modal p { font-size: 14px; color: #757575; line-height: 1.5; margin-bottom: 20px; }
+  .welcome-modal-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; background: #25D366; color: #fff;
+    border: none; padding: 14px; border-radius: 14px;
+    font-weight: 700; font-size: 14px; cursor: pointer;
+    text-decoration: none; font-family: inherit;
+  }
+  .welcome-modal-btn:active { transform: scale(0.98); }
+  .welcome-modal-later {
+    display: block; margin-top: 12px;
+    background: none; border: none;
+    color: #9e9e9e; font-size: 13px; font-weight: 600;
+    cursor: pointer; width: 100%; padding: 8px;
+    font-family: inherit;
+  }
 </style>
 </head>
 <body>
@@ -476,6 +530,31 @@ HTML_DASHBOARD = (
     <button class="close-btn" onclick="toggleDebug()">×</button>
   </div>
   <div id="debugContent">Chargement...</div>
+</div>
+
+<!-- POPUP BIENVENUE -->
+<div class="welcome-modal-overlay" id="welcomeModalOverlay">
+  <div class="welcome-modal">
+    <button class="welcome-modal-close" onclick="closeWelcomeModal()" aria-label="Fermer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="welcome-modal-icon">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </div>
+    <h3>Bienvenue sur TriBoost 👋</h3>
+    <p>Rejoignez notre groupe WhatsApp officiel pour ne rien rater : annonces, astuces et actualités en avant-première.</p>
+    <a href="https://chat.whatsapp.com/IxuVQ7XI3ti8FhUIb6U5iF" target="_blank" rel="noopener" class="welcome-modal-btn" onclick="closeWelcomeModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.32A7.85 7.85 0 0 0 12.05 4a7.94 7.94 0 0 0-6.9 11.9L4 20l4.2-1.1a7.9 7.9 0 0 0 3.85 1h.01a7.94 7.94 0 0 0 5.54-13.58zM12.06 18.4h-.01a6.5 6.5 0 0 1-3.32-.91l-.24-.14-2.47.65.66-2.41-.16-.25a6.53 6.53 0 1 1 5.54 3.06zm3.6-4.9c-.2-.1-1.17-.58-1.35-.64-.18-.07-.32-.1-.45.1-.13.2-.51.64-.63.77-.12.13-.23.15-.43.05a5.4 5.4 0 0 1-1.6-.99 6 6 0 0 1-1.1-1.37c-.12-.2 0-.31.09-.4.09-.09.2-.24.3-.36.1-.12.13-.2.2-.33.07-.13.03-.25-.02-.35-.05-.1-.45-1.08-.62-1.48-.16-.39-.33-.34-.45-.34h-.38c-.13 0-.35.05-.53.25-.18.2-.7.68-.7 1.66 0 .98.72 1.93.82 2.06.1.13 1.4 2.14 3.4 3 .47.2.84.32 1.13.42.47.15.9.13 1.24.08.38-.06 1.17-.48 1.33-.94.16-.46.16-.86.11-.94-.05-.08-.18-.13-.38-.23z"/></svg>
+      Rejoindre le groupe
+    </a>
+    <button class="welcome-modal-later" onclick="closeWelcomeModal()">Plus tard</button>
+  </div>
 </div>
 
 <!-- OVERLAY -->
@@ -612,6 +691,39 @@ HTML_DASHBOARD = (
       <div class="drawer-item-text">
         <span class="title">Affilié</span>
         <span class="desc">Votre réseau à 3 niveaux</span>
+      </div>
+      <div class="drawer-item-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+    </a>
+
+    <div class="drawer-section-label">Support</div>
+
+    <a href="https://chat.whatsapp.com/IxuVQ7XI3ti8FhUIb6U5iF" target="_blank" rel="noopener" class="drawer-item">
+      <div class="drawer-item-icon di-teal">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <div class="drawer-item-text">
+        <span class="title">Groupe officiel</span>
+        <span class="desc">Rejoignez-nous sur WhatsApp</span>
+      </div>
+      <div class="drawer-item-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+    </a>
+
+    <a href="/contact" class="drawer-item">
+      <div class="drawer-item-icon di-blue">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+      <div class="drawer-item-text">
+        <span class="title">Contact</span>
+        <span class="desc">Besoin d'aide ?</span>
       </div>
       <div class="drawer-item-arrow">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -959,6 +1071,14 @@ HTML_DASHBOARD = (
     }
   }
 
+  // ===== POPUP BIENVENUE =====
+  function showWelcomeModal() {
+    document.getElementById('welcomeModalOverlay').classList.add('show');
+  }
+  function closeWelcomeModal() {
+    document.getElementById('welcomeModalOverlay').classList.remove('show');
+  }
+
   // ===== DEBUG PANEL (caché — 5 clics sur le logo) =====
   let logoClickCount = 0;
   let logoClickTimer = null;
@@ -1156,6 +1276,7 @@ HTML_DASHBOARD = (
   // ===== INIT =====
   loadProfile();
   startAutoRefresh();
+  setTimeout(showWelcomeModal, 600);
 
   console.log('[DASHBOARD] ✅ Auto-refresh activé (30s)');
 </script>
