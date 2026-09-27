@@ -10,8 +10,10 @@ from app.routes import (
     auth,
     boost,
     chat,
+    contacts,
     courses,
     formations,
+    groupes,
     history,
     lesson_api,
     marketplace,
@@ -48,3 +50,5 @@ app.include_router(shop.router, prefix="/api/shop", tags=["Shop"])
 app.include_router(ads.router, prefix="/api/ads", tags=["Ads"])
 app.include_router(courses.router, prefix="/api/courses", tags=["Courses"])
 app.include_router(lesson_api.router, prefix="/api/lesson", tags=["LessonAPI"])
+app.include_router(contacts.router, prefix="/api/contacts", tags=["Contacts"])
+app.include_router(groupes.router, prefix="/api/groupes", tags=["Groupes"])
