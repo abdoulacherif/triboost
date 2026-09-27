@@ -46,6 +46,33 @@ HTML_BOUTIQUE = (
   }
   .spacer { width: 40px; }
 
+  /* ===== BANNIÈRE INACTIF ===== */
+  .inactive-banner {
+    display: none;
+    margin: 0 16px 4px;
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    border: 1.5px solid #ffb74d;
+    border-radius: 16px;
+    padding: 14px 16px;
+    align-items: center; gap: 12px;
+  }
+  .inactive-banner.show { display: flex; }
+  .inactive-banner .icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: #ffe0b2; color: #e65100;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .inactive-banner .text { flex: 1; min-width: 0; }
+  .inactive-banner .title { font-size: 13px; font-weight: 800; color: #e65100; margin-bottom: 2px; }
+  .inactive-banner .desc { font-size: 11px; color: #bf360c; }
+  .inactive-banner .action {
+    background: #e65100; color: #fff;
+    border: none; padding: 8px 12px;
+    border-radius: 10px; font-size: 11px; font-weight: 700;
+    cursor: pointer; flex-shrink: 0;
+  }
+
   /* ===== HERO ===== */
   .hero {
     margin: 16px;
@@ -169,6 +196,7 @@ HTML_BOUTIQUE = (
     text-decoration: none;
     color: inherit;
     transition: transform 0.15s;
+    cursor: pointer;
   }
   .formation-card:active { transform: scale(0.98); }
   @keyframes fadeIn {
@@ -207,6 +235,16 @@ HTML_BOUTIQUE = (
     padding: 3px 6px;
     border-radius: 5px;
     letter-spacing: 0.5px;
+    z-index: 2;
+  }
+  .fc-cover .badge-lock {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: rgba(230, 81, 0, 0.9);
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
     z-index: 2;
   }
 
@@ -349,6 +387,22 @@ HTML_BOUTIQUE = (
     <div class="spacer"></div>
   </header>
 
+  <!-- BANNIÈRE INACTIF -->
+  <div class="inactive-banner" id="inactiveBanner">
+    <div class="icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="title">Compte non activé</div>
+      <div class="desc">Activez votre compte pour accéder aux formations</div>
+    </div>
+    <button class="action" onclick="location.href='/activation'">Activer</button>
+  </div>
+
   <!-- HERO -->
   <div class="hero">
     <div class="hero-content">
@@ -447,6 +501,35 @@ HTML_BOUTIQUE = (
 
   let currentCategory = 'tous';
   let allFormations = [];
+  let isActivated = false;
+
+  // ===== ACTIVATION =====
+  async function loadActivationStatus() {
+    try {
+      const res = await fetch('/api/auth/profile/' + userId + '?t=' + Date.now(), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/login';
+        return;
+      }
+      if (!res.ok) { updateActivationUI(false); return; }
+      const data = await res.json();
+      const raw = data.profile.is_activated;
+      isActivated = (raw === true || raw === "true" || raw === 1 || raw === "1");
+      updateActivationUI(isActivated);
+    } catch (err) {
+      console.error('Erreur profil:', err);
+      updateActivationUI(false);
+    }
+  }
+
+  function updateActivationUI(activated) {
+    const banner = document.getElementById('inactiveBanner');
+    if (activated) banner.classList.remove('show');
+    else banner.classList.add('show');
+  }
 
   // ===== CHARGER LES FORMATIONS =====
   async function loadFormations(category = 'tous', search = '') {
@@ -535,10 +618,20 @@ HTML_BOUTIQUE = (
     };
     const catIcon = catIcons[f.category] || '📚';
 
+    const lockBadge = isActivated ? '' : `
+      <div class="badge-lock">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+    `;
+
     return `
-      <a href="/boutique/${f.id}" class="formation-card">
+      <a href="/boutique/${f.id}" class="formation-card" onclick="return handleFormationClick(event, '${f.id}')">
         <div class="fc-cover">
           ${f.is_free ? '<div class="badge-free">GRATUIT</div>' : ''}
+          ${lockBadge}
           ${cover}
         </div>
         <div class="fc-body">
@@ -555,6 +648,55 @@ HTML_BOUTIQUE = (
         </div>
       </a>
     `;
+  }
+
+  // ===== CLIC SUR UNE FORMATION (bloqué si non activé) =====
+  function handleFormationClick(event, formationId) {
+    if (!isActivated) {
+      event.preventDefault();
+      showInactiveToast();
+      return false;
+    }
+    return true;
+  }
+
+  function showInactiveToast() {
+    if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+    const old = document.getElementById('inactiveToast');
+    if (old) old.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'inactiveToast';
+    toast.style.cssText = `
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #e65100, #bf360c);
+      color: #fff; padding: 16px 20px; border-radius: 16px;
+      font-size: 13px; font-weight: 600;
+      box-shadow: 0 10px 30px rgba(230, 81, 0, 0.5);
+      z-index: 10000; max-width: 340px; text-align: center; line-height: 1.5;
+    `;
+    toast.innerHTML = `
+      <div style="font-size:24px; margin-bottom:6px;">🔒</div>
+      <div><strong>Compte non activé</strong></div>
+      <div style="font-size:12px; opacity:0.9; margin-top:4px;">
+        Activez votre compte pour accéder aux formations
+      </div>
+      <button onclick="location.href='/activation'" style="
+        margin-top:12px; background:#fff; color:#e65100;
+        border:none; padding:10px 20px; border-radius:10px;
+        font-weight:800; font-size:13px; cursor:pointer;
+        font-family:inherit; width:100%;
+      ">Activer maintenant</button>
+      <button onclick="this.parentElement.remove()" style="
+        margin-top:6px; background:transparent; color:#fff;
+        border:1px solid rgba(255,255,255,0.4);
+        padding:8px 20px; border-radius:10px;
+        font-weight:600; font-size:12px; cursor:pointer;
+        font-family:inherit; width:100%;
+      ">Plus tard</button>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast?.remove(), 6000);
   }
 
   function escapeHtml(s) {
@@ -604,6 +746,7 @@ HTML_BOUTIQUE = (
   });
 
   // ===== INIT =====
+  loadActivationStatus();
   loadFormations();
 </script>
 </body>
