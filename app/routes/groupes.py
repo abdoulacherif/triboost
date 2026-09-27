@@ -12,8 +12,9 @@ async def get_groupes():
     try:
         response = (
             supabase.table("groupes")
-            .select("id, name, description, link")
-            .order("created_at")
+            .select("id, name, theme, invite_link, position")
+            .eq("active", True)
+            .order("position")
             .execute()
         )
         return {"groupes": response.data}
