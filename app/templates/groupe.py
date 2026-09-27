@@ -208,7 +208,7 @@ HTML_GROUPE = (
         </div>
         <div class="group-card-text">
           <div class="title">${g.name}</div>
-          <div class="desc">${g.description || ''}</div>
+          <div class="desc">${g.theme || ''}</div>
         </div>
         <button class="group-join-mini" onclick="handleJoinGroup(${i})">Rejoindre</button>
       </div>
@@ -218,7 +218,7 @@ HTML_GROUPE = (
   // ===== ACTIONS (bloquées si non activé) =====
   function handleJoinGroup(i) {
     if (!isActivated) { showInactiveToast(); return; }
-    window.open(GROUPS[i].link, '_blank');
+    window.open(GROUPS[i].invite_link, '_blank');
   }
 
   function showInactiveToast() {
