@@ -12,7 +12,7 @@ async def get_contacts():
     try:
         response = (
             supabase.table("contacts")
-            .select("id, name, role, phone")
+            .select("id, name, business, phone, city, country, sector")
             .order("created_at")
             .execute()
         )
