@@ -699,7 +699,7 @@ HTML_DASHBOARD = (
 
     <div class="drawer-section-label">Support</div>
 
-    <a href="https://chat.whatsapp.com/IxuVQ7XI3ti8FhUIb6U5iF" target="_blank" rel="noopener" class="drawer-item">
+    <a href="/groupe" class="drawer-item">
       <div class="drawer-item-icon di-teal">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
