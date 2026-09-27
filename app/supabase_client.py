@@ -1,39 +1,58 @@
 """
 Client Supabase partagé pour toute l'application.
-Utilisé par les routes FastAPI pour interagir avec la base Supabase.
+
+Variables d'environnement attendues (Vercel + .env local) :
+    - SUPABASE_URL                 → URL du projet Supabase
+    - SUPABASE_ANON_KEY            → clé publique "anon" (utilisée partout)
+    - SUPABASE_SERVICE_ROLE_KEY    → clé service_role (⚠️ admin uniquement, ne jamais exposer)
 """
 
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# Charge les variables d'environnement depuis .env (utile en local)
+# Charge les variables depuis .env (utile en local uniquement)
 load_dotenv()
 
-# Récupération des variables d'environnement
-SUPABASE_URL: str | None = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY: str | None = os.environ.get("SUPABASE_KEY")
 
-# Vérification au démarrage (aide au debug)
+# ---------------------------------------------------------------------------
+# Récupération des variables d'environnement
+# ---------------------------------------------------------------------------
+SUPABASE_URL: str | None = os.environ.get("SUPABASE_URL")
+SUPABASE_ANON_KEY: str | None = os.environ.get("SUPABASE_ANON_KEY")
+SUPABASE_SERVICE_ROLE_KEY: str | None = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+
+# ---------------------------------------------------------------------------
+# Vérifications au démarrage (aide au debug)
+# ---------------------------------------------------------------------------
 if not SUPABASE_URL:
     raise RuntimeError(
         "❌ SUPABASE_URL manquant. "
         "Ajoute-le dans .env (local) et dans Vercel → Settings → Environment Variables."
     )
-if not SUPABASE_KEY:
+
+if not SUPABASE_ANON_KEY:
     raise RuntimeError(
-        "❌ SUPABASE_KEY manquant. "
+        "❌ SUPABASE_ANON_KEY manquant. "
         "Ajoute-le dans .env (local) et dans Vercel → Settings → Environment Variables."
     )
 
-# Création du client unique (singleton)
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Optionnel : un client admin avec la service_role key (si tu en as besoin)
-# ⚠️ Ne jamais exposer la service_role key côté client !
-SUPABASE_SERVICE_KEY: str | None = os.environ.get("SUPABASE_SERVICE_KEY")
+# ---------------------------------------------------------------------------
+# Client public (anon) — à utiliser partout dans les routes FastAPI
+# ---------------------------------------------------------------------------
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-if SUPABASE_SERVICE_KEY:
-    supabase_admin: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+
+# ---------------------------------------------------------------------------
+# Client admin (service_role) — usage restreint côté serveur uniquement
+# ⚠️ Ne JAMAIS exposer cette clé côté client (navigateur/mobile)
+# ---------------------------------------------------------------------------
+if SUPABASE_SERVICE_ROLE_KEY:
+    supabase_admin: Client = create_client(
+        SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+    )
 else:
-    supabase_admin = supabase  # fallback
+    # Fallback : si la clé n'est pas définie, on retombe sur le client public
+    supabase_admin = supabase
